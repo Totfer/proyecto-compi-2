@@ -13,7 +13,7 @@ namespace Crl.Analizador
     {
         public Gramatica() : base(caseSensitive: true)
         {
-
+            // a duni le gusta el pene
             #region ER;
             RegexBasedTerminal Numerod = new RegexBasedTerminal("Numerod", "[0-9]+");
             RegexBasedTerminal Numeroe = new RegexBasedTerminal("Numeroe", "[0-9]+");
