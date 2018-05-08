@@ -292,7 +292,7 @@ namespace Crl.Analizador
                                 error += "Error semantico, no es posble utilizar la sentencia Continuar si no es encuentra en un ciclo o en un select\n";
                             }
                             break;
-                        case "para":
+                        case "Para":
                             pila.pila.Push(tabla);
                             brek = Para_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam, verd, brek);
                             pila.pila.Pop();
@@ -457,9 +457,9 @@ namespace Crl.Analizador
                                 error += "Error semantico, no es posble utilizar la sentencia Continuar si no es encuentra en un ciclo o en un select\n";
                             }
                             break;
-                        case "para":
+                        case "Para":
                             pila.pila.Push(tabla);
-                            brek = Para_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam, verd, brek);
+                            brek = Para_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam, verd, brek);
                             pila.pila.Pop();
                             break;
                     }
@@ -469,7 +469,120 @@ namespace Crl.Analizador
         }
         private bool Para_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam, bool verd, bool brek) {
 
+            if (root.ChildNodes.ElementAt(2).ChildNodes.ElementAt(0).ToString().Equals("Double (Keyword)"))
+            {
+                Simbolos simb = new Simbolos();
+                simb.nombre = root.ChildNodes.ElementAt(2).ChildNodes.ElementAt(1).ToString().Replace(" (Id)", "");
+                simb.tipo = root.ChildNodes.ElementAt(2).ChildNodes.ElementAt(0).ToString().Replace(" (Keyword)", "");
+                simb.ambito = "";
 
+                try {
+                    tipod = "Double";
+                    simb.valor = Convert.ToString(Convert.ToDouble(Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(2),pila)));
+                    Tabla tb = new Tabla();
+                    tb.tabla.Add(simb);
+                    pila.pila.Push(tb);
+                    bool entro = true;
+                    Tabla tab = new Tabla();
+
+                    while (Calculadorametodo.ResolverOperacion(root, pila).Equals("true") || Calculadorametodo.ResolverOperacion(root, pila).Equals("1")) {
+                        if (entro) {
+                            entro = false;
+                            brek = Contenido_Metodo(root.ChildNodes.ElementAt(7), pila, tb, tablam, true, brek);
+                            pila.pila.Pop();
+                            if (continuar)
+                            {
+                                if (root.ChildNodes.ElementAt(4).ChildNodes.ElementAt(0).ToString().Equals("++ (Key symbol)"))
+                                {
+                                    simb.valor = Convert.ToString(Convert.ToDouble(simb.valor) + 1);
+
+                                    tab.tabla.Add(simb);
+                                    pila.pila.Push(tab);
+                                }
+                                else
+                                {
+                                    simb.valor = Convert.ToString(Convert.ToDouble(simb.valor) - 1);
+                                    tab.tabla.Add(simb);
+                                    pila.pila.Push(tab);
+                                }
+                                brek = true;
+                                continuar = false;
+                                continue;
+                            }
+                            if (!brek)
+                            {
+                                brek = true;
+                                break;
+                            }
+                            if (root.ChildNodes.ElementAt(4).ChildNodes.ElementAt(0).ToString().Equals("++ (Key symbol)"))
+                            {
+                                simb.valor = Convert.ToString(Convert.ToDouble(simb.valor) + 1);
+                                
+                                tab.tabla.Add(simb);
+                                pila.pila.Push(tab);
+                            }
+                            else
+                            {
+                                simb.valor = Convert.ToString(Convert.ToDouble(simb.valor) - 1);
+                                tab.tabla.Add(simb);
+                                pila.pila.Push(tab);
+                            }
+                        }
+                        else {
+                            
+                            tab = new Tabla();
+                            brek = Contenido_Metodo(root.ChildNodes.ElementAt(7), pila, tab, tablam, true, brek);
+                            pila.pila.Pop();
+                            if (continuar)
+                            {
+                                if (root.ChildNodes.ElementAt(4).ChildNodes.ElementAt(0).ToString().Equals("++ (Key symbol)"))
+                                {
+                                    simb.valor = Convert.ToString(Convert.ToDouble(simb.valor) + 1);
+                                    tab.tabla.Add(simb);
+                                    pila.pila.Push(tab);
+                                }
+                                else
+                                {
+                                    simb.valor = Convert.ToString(Convert.ToDouble(simb.valor) - 1);
+                                    tab.tabla.Add(simb);
+                                    pila.pila.Push(tab);
+                                }
+                                brek = true;
+                                continuar = false;
+                                continue;
+                            }
+                            if (!brek)
+                            {
+                                brek = true;
+                                break;
+                            }
+                            if (root.ChildNodes.ElementAt(4).ChildNodes.ElementAt(0).ToString().Equals("++ (Key symbol)"))
+                            {
+                                simb.valor = Convert.ToString(Convert.ToDouble(simb.valor) + 1);
+                                tab.tabla.Add(simb);
+                                pila.pila.Push(tab);
+                            }
+                            else
+                            {
+                                simb.valor = Convert.ToString(Convert.ToDouble(simb.valor) - 1);
+                                tab.tabla.Add(simb);
+                                pila.pila.Push(tab);
+                            }
+                        }
+                       
+                    }
+
+
+
+                } catch (Exception e) {
+                    error = "Error semantico, se debe asignar un dato de tipo Double a la variable " + root.ChildNodes.ElementAt(2).ChildNodes.ElementAt(1).ToString().Replace("(Id)", "") +"\n";
+
+                }
+
+            }
+            else {
+                error ="Error semantico, la variable "+ root.ChildNodes.ElementAt(2).ChildNodes.ElementAt(1).ToString().Replace("(Id)","") + " debe de ser de tipo Double\n";
+            }
             return brek;
         }
         private bool Selecciona_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam,bool verd,bool brek)
