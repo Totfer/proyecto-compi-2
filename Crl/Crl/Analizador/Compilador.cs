@@ -125,20 +125,20 @@ namespace Crl.Analizador
         bool conti = false;
         bool contfo = true;
 
-        bool aumenta;
+        bool continuar = false;
         //retur
         Simbolos simr;
         String retorno;
 
         public String tipom;
-        private void Contenido_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla,TablaM tablam,bool verd,bool bre)
+        private bool Contenido_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla,TablaM tablam,bool verd,bool brek)
         {
             String ass= root.ToString();
             if (root.ChildNodes.ElementAt(0).ToString().Equals("Contenidometfun2"))
             {
-                Contenido_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam,verd,bre);
-                if (ret) { return; }
-                if (contfo)
+               brek = Contenido_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam,verd,brek);
+                if (ret) { return brek; }
+                if (brek)
                 {
 
                     switch (root.ChildNodes.ElementAt(1).ToString())
@@ -247,7 +247,7 @@ namespace Crl.Analizador
                             break;
                         case "SI":
                             pila.pila.Push(tabla);
-                            Si_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam,verd);
+                            brek = Si_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam,verd, brek);
                             pila.pila.Pop();
                             break;
                         case "Print":
@@ -257,31 +257,46 @@ namespace Crl.Analizador
                             break;
                         case "Hasta":
                             pila.pila.Push(tabla);
-                            Hasta_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam, verd);
+                            brek = Hasta_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam, verd, brek);
                             pila.pila.Pop();
                             break;
                         case "Mientras":
                             pila.pila.Push(tabla);
-                            Mientras_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam, verd);
+                            brek = Mientras_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam, verd, brek);
                             pila.pila.Pop();
                             break;
 
                         case "selecciona":
                             pila.pila.Push(tabla);
-                            Selecciona_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam, verd);
+                            brek = Selecciona_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam, verd, brek);
                             pila.pila.Pop();
                             break;
                         case "detener":
                             if (verd)
                             {
-                                bre = false;
+                                brek = true;
                             }
                             else
                             {
-                                error += "Error semantico, no es posble utilizar la sentencia break si no es encuentra en un ciclo o en un select\n";
+                                error += "Error semantico, no es posble utilizar la sentencia Detener si no es encuentra en un ciclo o en un select\n";
                             }
                             break;
-
+                        case "continua":
+                            if (verd)
+                            {
+                                continuar = true;
+                                return false;
+                            }
+                            else
+                            {
+                                error += "Error semantico, no es posble utilizar la sentencia Continuar si no es encuentra en un ciclo o en un select\n";
+                            }
+                            break;
+                        case "para":
+                            pila.pila.Push(tabla);
+                            brek = Para_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam, verd, brek);
+                            pila.pila.Pop();
+                            break;
 
                     }
 
@@ -289,8 +304,8 @@ namespace Crl.Analizador
             }
             else
             {
-                if (ret) { return; }
-                if (contfo)
+                if (ret) { return brek; }
+                if (brek)
                 {
 
                     switch (root.ChildNodes.ElementAt(0).ToString())
@@ -396,7 +411,7 @@ namespace Crl.Analizador
                             break;
                         case "SI":
                             pila.pila.Push(tabla);
-                            Si_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam, verd);
+                            brek = Si_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam, verd, brek);
                             pila.pila.Pop();
                             break;
                         case "Print":
@@ -406,37 +421,58 @@ namespace Crl.Analizador
                             break;
                         case "Hasta":
                             pila.pila.Push(tabla);
-                            Hasta_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam, verd);
+                            brek = Hasta_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam, verd, brek);
                             pila.pila.Pop();
                             break;
                         case "Mientras":
                             pila.pila.Push(tabla);
-                            Mientras_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam, verd);
+                            brek = Mientras_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam, verd, brek);
                             pila.pila.Pop();
                             break;
 
                         case "selecciona":
                             pila.pila.Push(tabla);
-                            Selecciona_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam, verd);
+                           brek= Selecciona_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam, verd, brek);
                             pila.pila.Pop();
                             break;
 
                         case "detener":
                             if (verd)
                             {
-                                bre = false;
+                                return false;
                             }
                             else
                             {
-                                error += "Error semantico, no es posble utilizar la sentencia break si no es encuentra en un ciclo o en un select\n";
+                                error += "Error semantico, no es posble utilizar la sentencia Detener si no es encuentra en un ciclo o en un select\n";
                             }
                             break;
-
+                        case "continua":
+                            if (verd)
+                            {
+                                continuar = true;
+                                return false;
+                            }
+                            else
+                            {
+                                error += "Error semantico, no es posble utilizar la sentencia Continuar si no es encuentra en un ciclo o en un select\n";
+                            }
+                            break;
+                        case "para":
+                            pila.pila.Push(tabla);
+                            brek = Para_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam, verd, brek);
+                            pila.pila.Pop();
+                            break;
                     }
                 }
             }
+            return brek;
         }
-        private void Selecciona_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam,bool verd,bool brek)
+        private bool Para_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam, bool verd, bool brek) {
+
+
+            return brek;
+        }
+        private bool Selecciona_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam,bool verd,bool brek)
         {
             Simbolos simb = new Simbolos();
             try {
@@ -444,9 +480,8 @@ namespace Crl.Analizador
                 simb.tipo = "Double";
                 simb.ambito = "Select";
                 simb.nombre = "sele";
-                defec = true;
-                ContenidoSelecciona(root.ChildNodes.ElementAt(5).ChildNodes.ElementAt(0),pila,tabla,tablam,simb,true);
-                contfo = true;
+                brek = ContenidoSelecciona(root.ChildNodes.ElementAt(5).ChildNodes.ElementAt(0),pila,tabla,tablam,simb,true, brek);
+                brek = true;
 
             }
             catch (Exception e) {
@@ -454,46 +489,45 @@ namespace Crl.Analizador
                 simb.tipo = "Double";
                 simb.ambito = "Select";
                 simb.nombre = "sele";
-                defec = true;
-                ContenidoSelecciona(root.ChildNodes.ElementAt(5).ChildNodes.ElementAt(0), pila, tabla, tablam, simb,true);
-                contfo = true;
+                brek = ContenidoSelecciona(root.ChildNodes.ElementAt(5).ChildNodes.ElementAt(0), pila, tabla, tablam, simb,true, brek);
+                brek = true;
             }
+            return brek;
         }
-        private void ContenidoSelecciona(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam,Simbolos simb, bool verd, bool brek)
+        private bool ContenidoSelecciona(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam,Simbolos simb, bool verd, bool brek)
         {
             if (root.ChildNodes.ElementAt(0).ToString().Equals("Contenidoswitch1"))
             {
-                ContenidoSelecciona(root.ChildNodes.ElementAt(0), pila, tabla, tablam, simb,true);
-                if (root.ChildNodes.ElementAt(1).ChildNodes.Count == 3&&contfo)
+                ContenidoSelecciona(root.ChildNodes.ElementAt(0), pila, tabla, tablam, simb,true, brek);
+                if (root.ChildNodes.ElementAt(1).ChildNodes.Count == 3&& brek)
                 {
                     if (root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(2).ChildNodes.Count == 3)
                     {
 
-                        Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(2).ChildNodes.ElementAt(2), pila, tabla, tablam,true,brek);
-                           
-                        
+                       brek= Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(2).ChildNodes.ElementAt(2), pila, tabla, tablam,true,brek);
 
+                        
                     }
                 }
                 else
                 {
 
-                    if (simb.tipo.Equals("Double") && contfo)
+                    if (simb.tipo.Equals("Double") && brek)
                     {
                         String[] dato = root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ToString().Split(' ');
                         try
                         {
                             if (Convert.ToString(Convert.ToDouble(dato[0])).Equals(simb.valor))
                             {
-                                Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(2), pila, tabla, tablam,true);
+                                brek = Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(2), pila, tabla, tablam,true, brek);
                                 
                             }
                             else
                             {
                                 if (root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(3).ChildNodes.Count > 2)
                                 {
-                                    
-                                    Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(3).ChildNodes.ElementAt(2), pila, tabla, tablam, true);
+
+                                    brek = Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(3).ChildNodes.ElementAt(2), pila, tabla, tablam, true, brek);
                                 }
                             }
                         }
@@ -505,10 +539,10 @@ namespace Crl.Analizador
                     else
                     {
                         String[] dato = root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ToString().Split(' ');
-                        if (Convert.ToString(Convert.ToDouble(dato[0])).Equals(simb.valor) && contfo)
+                        if (Convert.ToString(Convert.ToDouble(dato[0])).Equals(simb.valor) && brek)
                         {
-                           
-                            Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(2), pila, tabla, tablam, true);
+
+                            brek = Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(2), pila, tabla, tablam, true, brek);
                         }
                         else
                         {
@@ -516,7 +550,7 @@ namespace Crl.Analizador
                             {
                                 if (root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(3).ChildNodes.Count == 3)
                                 {
-                                    Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(3).ChildNodes.ElementAt(2), pila, tabla, tablam, true);
+                                    brek = Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(3).ChildNodes.ElementAt(2), pila, tabla, tablam, true, brek);
                                 }
 
                             }
@@ -526,12 +560,12 @@ namespace Crl.Analizador
             }
             else
             {
-                if (root.ChildNodes.ElementAt(0).ChildNodes.Count == 3 && contfo)
+                if (root.ChildNodes.ElementAt(0).ChildNodes.Count == 3 && brek)
                 {
                     if (root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(2).ChildNodes.Count == 3)
                     {
-                        
-                            Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(2).ChildNodes.ElementAt(2), pila, tabla, tablam, true);
+
+                        brek = Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(2).ChildNodes.ElementAt(2), pila, tabla, tablam, true, brek);
                         
 
                     }
@@ -539,14 +573,14 @@ namespace Crl.Analizador
                 else
                 {
 
-                    if (simb.tipo.Equals("Double") && contfo)
+                    if (simb.tipo.Equals("Double") && brek)
                     {
                         String[] dato = root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ToString().Split(' ');
                         try
                         {
                             if (Convert.ToString(Convert.ToDouble(dato[0])).Equals(simb.valor))
                             {
-                                Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(2), pila, tabla, tablam, true);
+                                brek = Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(2), pila, tabla, tablam, true, brek);
                                 
                             }
                             else
@@ -555,7 +589,7 @@ namespace Crl.Analizador
                                 {
                                     if (root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(3).ChildNodes.Count == 3)
                                     {
-                                        Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(3).ChildNodes.ElementAt(2), pila, tabla, tablam, true);
+                                        brek = Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(3).ChildNodes.ElementAt(2), pila, tabla, tablam, true, brek);
                                         
                                     }
 
@@ -570,23 +604,23 @@ namespace Crl.Analizador
                     else
                     {
                         String[] dato = root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ToString().Split(' ');
-                        if (Convert.ToString(Convert.ToDouble(dato[0])).Equals(simb.valor) && contfo)
+                        if (Convert.ToString(Convert.ToDouble(dato[0])).Equals(simb.valor) && brek)
                         {
-                            Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(2), pila, tabla, tablam, true);
+                            brek = Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(2), pila, tabla, tablam, true, brek);
                         }
                         else
                         {
-                            if (root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(3).ChildNodes.Count > 2 && contfo)
+                            if (root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(3).ChildNodes.Count > 2 && brek)
                             {
-                                Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(3).ChildNodes.ElementAt(2), pila, tabla, tablam, true);
+                                brek = Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(3).ChildNodes.ElementAt(2), pila, tabla, tablam, true, brek);
                             }
                         }
                     }
                 }
             }
+            return brek;
         }
-
-        private void Mientras_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam, bool verd, bool brek)
+        private bool Mientras_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam, bool verd, bool brek)
         {
             if (Calculadorametodo.ResolverOperacion(root, pila).Equals("1") || Calculadorametodo.ResolverOperacion(root, pila).Equals("true") || Calculadorametodo.ResolverOperacion(root, pila).Equals("0") || Calculadorametodo.ResolverOperacion(root, pila).Equals("false"))
             {
@@ -594,9 +628,15 @@ namespace Crl.Analizador
                 {
                     Tabla tb = new Tabla();
                     defec = true;
-                    Contenido_Metodo(root.ChildNodes.ElementAt(5), pila, tb, tablam, true);
-                    if (!contfo) {
-                        contfo = true;
+                    brek = Contenido_Metodo(root.ChildNodes.ElementAt(5), pila, tb, tablam, true, brek);
+                    if (continuar) {
+                        brek = true;
+                        continuar = false;
+                        continue;
+                    }
+
+                    if (!brek) {
+                        brek = true;
                         break;
                     }
                     
@@ -606,28 +646,40 @@ namespace Crl.Analizador
             {
                 error += "La exprecion en el Si no es Booleana";
             }
+            return brek;
         }
-
-        private void Hasta_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam, bool verd, bool brek)
+        private bool Hasta_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam, bool verd, bool brek)
         {
             if (Calculadorametodo.ResolverOperacion(root, pila).Equals("1") || Calculadorametodo.ResolverOperacion(root, pila).Equals("true") || Calculadorametodo.ResolverOperacion(root, pila).Equals("0") || Calculadorametodo.ResolverOperacion(root, pila).Equals("false"))
             {
 
                 while (Calculadorametodo.ResolverOperacion(root, pila).Equals("0") || Calculadorametodo.ResolverOperacion(root, pila).Equals("false"))
                 {
+                   
                     Tabla tb = new Tabla();
                     defec = true;
-                    Contenido_Metodo(root.ChildNodes.ElementAt(5), pila, tb, tablam,true);
-                    contfo = true;
+                    brek = Contenido_Metodo(root.ChildNodes.ElementAt(5), pila, tb, tablam,true, brek);
+                    brek = true;
+                    if (continuar)
+                    {
+                        brek = true;
+                        continuar = false;
+                        continue;
+                    }
+                    if (!brek)
+                    {
+                        brek = true;
+                        break;
+                    }
                 }
             }
             else
             {
                 error += "La exprecion en el Si no es Booleana";
             }
+            return brek;
         }
-
-        private void Si_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam, bool verd, bool brek)
+        private bool Si_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam, bool verd, bool brek)
         {
             if (Calculadorametodo.ResolverOperacion(root, pila).Equals("1") || Calculadorametodo.ResolverOperacion(root, pila).Equals("true") || Calculadorametodo.ResolverOperacion(root, pila).Equals("0") || Calculadorametodo.ResolverOperacion(root, pila).Equals("false"))
             {
@@ -635,7 +687,7 @@ namespace Crl.Analizador
                 if (Calculadorametodo.ResolverOperacion(root, pila).Equals("1") || Calculadorametodo.ResolverOperacion(root, pila).Equals("true"))
                 {
                     Tabla tb = new Tabla();
-                    Contenido_Metodo(root.ChildNodes.ElementAt(5), pila, tb, tablam,verd);
+                    brek = Contenido_Metodo(root.ChildNodes.ElementAt(5), pila, tb, tablam,verd,brek);
                 }
                 else
                 {
@@ -644,7 +696,7 @@ namespace Crl.Analizador
                         if (root.ChildNodes.ElementAt(7).ChildNodes.Count > 3)
                         {
                             Tabla tb = new Tabla();
-                            Contenido_Metodo(root.ChildNodes.ElementAt(7).ChildNodes.ElementAt(2), pila, tb, tablam,verd);
+                            brek = Contenido_Metodo(root.ChildNodes.ElementAt(7).ChildNodes.ElementAt(2), pila, tb, tablam,verd, brek);
                         }
                     }
 
@@ -654,6 +706,7 @@ namespace Crl.Analizador
             {
                 error += "La exprecion en el Si no es Booleana";
             }
+            return brek;
         }
 
 
