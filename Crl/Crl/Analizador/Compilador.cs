@@ -22,7 +22,7 @@ namespace Crl.Analizador
         public static PilaTS pilax;
         public static ParseTreeNode rai;
         bool ret;
-
+        Double cont;
         public bool analizar(String cadena)
         {
             consola = "";
@@ -42,6 +42,7 @@ namespace Crl.Analizador
                 Primera_pasada(raiz.ChildNodes.ElementAt(0), tabla, tablam);
                 pila.pila.Push(tabla);
                 pilax = pila;
+                cont++;
             }
             Segunda_pasada(raiz.ChildNodes.ElementAt(0), pila,tablam);
             if (raiz == null)
@@ -93,7 +94,7 @@ namespace Crl.Analizador
                 {
                     Tabla tabla = new Tabla();
                     ret = false;
-                    Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(4), pila, tabla,tablam);
+                    Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(4), pila, tabla,tablam,true, true);
                     ret = false;
                 }
             }
@@ -104,7 +105,7 @@ namespace Crl.Analizador
 
                     Tabla tabla = new Tabla();
                     ret = false;
-                    Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(4), pila, tabla, tablam);
+                    Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(4), pila, tabla, tablam,true,true);
                     ret = false;
                 }
 
@@ -123,277 +124,319 @@ namespace Crl.Analizador
         bool contmientras = true;
         bool conti = false;
         bool contfo = true;
-        Double cont;
+
         bool aumenta;
         //retur
         Simbolos simr;
         String retorno;
 
         public String tipom;
-        private void Contenido_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla,TablaM tablam)
+        private void Contenido_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla,TablaM tablam,bool verd,bool bre)
         {
             String ass= root.ToString();
             if (root.ChildNodes.ElementAt(0).ToString().Equals("Contenidometfun2"))
             {
-                Contenido_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam);
+                Contenido_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam,verd,bre);
                 if (ret) { return; }
-                if (conthasta)
+                if (contfo)
                 {
-                    if (contmientras)
+
+                    switch (root.ChildNodes.ElementAt(1).ToString())
                     {
-                        if (contfo)
-                        {
-                            switch (root.ChildNodes.ElementAt(1).ToString())
+                        case "Variable2":
+                            String[] var = root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(0).ToString().Split(' ');
+                            bool salir = true;
+
+                            if (var[1].Equals("(Id)"))
                             {
-                                case "Variable2":
-                                    String[] var = root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(0).ToString().Split(' ');
-                                    bool salir = true;
-
-                                    if (var[1].Equals("(Id)"))
+                                foreach (Tabla tab in pila.pila)
+                                {
+                                    Tabla tabla2 = new Tabla();
+                                    foreach (Simbolos sim in tab.tabla)
                                     {
-                                        foreach (Tabla tab in pila.pila)
+                                        if (sim.nombre.Equals(var[0]) && salir)
                                         {
-                                            Tabla tabla2 = new Tabla();
-                                            foreach (Simbolos sim in tab.tabla)
+                                            salir = false;
+                                            switch (sim.tipo)
                                             {
-                                                if (sim.nombre.Equals(var[0]) && salir)
-                                                {
-                                                    salir = false;
-                                                    switch (sim.tipo)
+                                                case "Int":
+                                                    try
                                                     {
-                                                        case "Int":
-                                                            try
-                                                            {
-                                                                sim.valor = Convert.ToString(Convert.ToInt32(Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila)));
-                                                            }
-                                                            catch (Exception e)
-                                                            {
-
-                                                            }
-                                                            break;
-                                                        case "Double":
-                                                            try
-                                                            {
-                                                                sim.valor = Convert.ToString(Convert.ToDouble(Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila)));
-                                                            }
-                                                            catch (Exception e)
-                                                            {
-
-                                                            }
-                                                            break;
-                                                        case "String":
-                                                            try
-                                                            {
-                                                                sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila);
-                                                            }
-                                                            catch (Exception e)
-                                                            {
-
-                                                            }
-                                                            break;
-                                                        case "Bool":
-                                                            try
-                                                            {
-                                                                if (Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila).Equals("0") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila).Equals("1") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila).Equals("true") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila).Equals("false"))
-                                                                {
-                                                                    sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila);
-                                                                }
-                                                            }
-                                                            catch (Exception e)
-                                                            {
-
-                                                            }
-                                                            break;
-                                                        case "Char":
-                                                            try
-                                                            {
-                                                                if (Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila).Contains("'"))
-                                                                {
-                                                                    sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila);
-                                                                }
-                                                            }
-                                                            catch (Exception e)
-                                                            {
-
-                                                            }
-                                                            break;
+                                                        sim.valor = Convert.ToString(Convert.ToInt32(Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila)));
                                                     }
-                                                }
-                                                tabla2.tabla.Add(sim);
+                                                    catch (Exception e)
+                                                    {
+
+                                                    }
+                                                    break;
+                                                case "Double":
+                                                    try
+                                                    {
+                                                        sim.valor = Convert.ToString(Convert.ToDouble(Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila)));
+                                                    }
+                                                    catch (Exception e)
+                                                    {
+
+                                                    }
+                                                    break;
+                                                case "String":
+                                                    try
+                                                    {
+                                                        sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila);
+                                                    }
+                                                    catch (Exception e)
+                                                    {
+
+                                                    }
+                                                    break;
+                                                case "Bool":
+                                                    try
+                                                    {
+                                                        if (Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila).Equals("0") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila).Equals("1") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila).Equals("true") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila).Equals("false"))
+                                                        {
+                                                            sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila);
+                                                        }
+                                                    }
+                                                    catch (Exception e)
+                                                    {
+
+                                                    }
+                                                    break;
+                                                case "Char":
+
+                                                    if (Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila).Contains("'"))
+                                                    {
+                                                        try
+                                                        {
+                                                            sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila);
+                                                            Char tr = Convert.ToChar(sim.valor.Replace("\'", ""));
+
+                                                        }
+                                                        catch (Exception)
+                                                        {
+                                                        }
+
+                                                        try
+                                                        {
+                                                            int ti = Convert.ToInt32(sim.valor.Replace("\'", ""));
+                                                            sim.valor = Convert.ToString(Convert.ToChar((Char)Convert.ToInt32(ti)));
+                                                        }
+                                                        catch (Exception f)
+                                                        {
+                                                            error += "Linea: " + "Columna: " + " Error semantico, no es posible asignar un valor que no sea tipo Char a la variable \"" + sim.nombre + "\" .\n";
+
+
+                                                        }
+
+
+                                                    }
+
+                                                    break;
                                             }
                                         }
-
-                                        break;
-
+                                        tabla2.tabla.Add(sim);
                                     }
-                                    pila.pila.Push(tabla);
-                                    VariableMetodo(root.ChildNodes.ElementAt(1), tabla, pila);
-                                    pila.pila.Pop();
-                                    break;
-                                case "SI":
-                                    pila.pila.Push(tabla);
-                                    Si_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam);
-                                    pila.pila.Pop();
-                                    break;
-                                case "Print":
-                                    pila.pila.Push(tabla);
-                                    consola += Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila) + "\n";
-                                    pila.pila.Pop();
-                                    break;
-                                case "Hasta":
-                                    pila.pila.Push(tabla);
-                                    Hasta_Metodo(root.ChildNodes.ElementAt(1), pila, tabla,tablam);
-                                    pila.pila.Pop();
-                                    break;
-                                case "Mientras":
-                                    pila.pila.Push(tabla);
-                                    Mientras_Metodo(root.ChildNodes.ElementAt(1), pila, tabla,tablam);
-                                    pila.pila.Pop();
-                                    break;
+                                }
 
-                                case "selecciona":
-                                    pila.pila.Push(tabla);
-                                    Selecciona_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam);
-                                    pila.pila.Pop();
-                                    break;
+                                break;
 
                             }
-                        }
-                    }
-                }
-            }else {
-                if (ret) { return; }
-                if (conthasta)
-                {
-                    if (contmientras)
-                    {
-                        if (contfo)
-                        {
-                            switch (root.ChildNodes.ElementAt(0).ToString())
+                            pila.pila.Push(tabla);
+                            VariableMetodo(root.ChildNodes.ElementAt(1), tabla, pila);
+                            pila.pila.Pop();
+                            break;
+                        case "SI":
+                            pila.pila.Push(tabla);
+                            Si_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam,verd);
+                            pila.pila.Pop();
+                            break;
+                        case "Print":
+                            pila.pila.Push(tabla);
+                            consola += Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila) + "\n";
+                            pila.pila.Pop();
+                            break;
+                        case "Hasta":
+                            pila.pila.Push(tabla);
+                            Hasta_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam, verd);
+                            pila.pila.Pop();
+                            break;
+                        case "Mientras":
+                            pila.pila.Push(tabla);
+                            Mientras_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam, verd);
+                            pila.pila.Pop();
+                            break;
+
+                        case "selecciona":
+                            pila.pila.Push(tabla);
+                            Selecciona_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam, verd);
+                            pila.pila.Pop();
+                            break;
+                        case "detener":
+                            if (verd)
                             {
-                                case "Variable2":
-                                    String[] var = root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ToString().Split(' ');
-                                    bool salir = true;
+                                bre = false;
+                            }
+                            else
+                            {
+                                error += "Error semantico, no es posble utilizar la sentencia break si no es encuentra en un ciclo o en un select\n";
+                            }
+                            break;
 
-                                    if (var[1].Equals("(Id)"))
+
+                    }
+
+                }
+            }
+            else
+            {
+                if (ret) { return; }
+                if (contfo)
+                {
+
+                    switch (root.ChildNodes.ElementAt(0).ToString())
+                    {
+                        case "Variable2":
+                            String[] var = root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ToString().Split(' ');
+                            bool salir = true;
+
+                            if (var[1].Equals("(Id)"))
+                            {
+                                foreach (Tabla tab in pila.pila)
+                                {
+                                    Tabla tabla2 = new Tabla();
+                                    foreach (Simbolos sim in tab.tabla)
                                     {
-                                        foreach (Tabla tab in pila.pila)
+                                        if (sim.nombre.Equals(var[0]) && salir)
                                         {
-                                            Tabla tabla2 = new Tabla();
-                                            foreach (Simbolos sim in tab.tabla)
+                                            salir = false;
+                                            switch (sim.tipo)
                                             {
-                                                if (sim.nombre.Equals(var[0]) && salir)
-                                                {
-                                                    salir = false;
-                                                    switch (sim.tipo)
+                                                case "Int":
+                                                    try
                                                     {
-                                                        case "Int":
-                                                            try
-                                                            {
-                                                                sim.valor = Convert.ToString(Convert.ToInt32(Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila)));
-                                                            }
-                                                            catch (Exception e)
-                                                            {
-
-                                                            }
-                                                            break;
-                                                        case "Double":
-                                                            try
-                                                            {
-                                                                sim.valor = Convert.ToString(Convert.ToDouble(Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila)));
-                                                            }
-                                                            catch (Exception e)
-                                                            {
-
-                                                            }
-                                                            break;
-                                                        case "String":
-                                                            try
-                                                            {
-                                                                sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila);
-                                                            }
-                                                            catch (Exception e)
-                                                            {
-
-                                                            }
-                                                            break;
-                                                        case "Bool":
-                                                            try
-                                                            {
-                                                                if (Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila).Equals("0") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila).Equals("1") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila).Equals("true") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila).Equals("false"))
-                                                                {
-                                                                    sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila);
-                                                                }
-                                                            }
-                                                            catch (Exception e)
-                                                            {
-
-                                                            }
-                                                            break;
-                                                        case "Char":
-                                                            try
-                                                            {
-                                                                if (Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila).Contains("'"))
-                                                                {
-                                                                    sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila);
-                                                                }
-                                                            }
-                                                            catch (Exception e)
-                                                            {
-
-                                                            }
-                                                            break;
+                                                        sim.valor = Convert.ToString(Convert.ToInt32(Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila)));
                                                     }
-                                                }
-                                                tabla2.tabla.Add(sim);
+                                                    catch (Exception e)
+                                                    {
+
+                                                    }
+                                                    break;
+                                                case "Double":
+                                                    try
+                                                    {
+                                                        sim.valor = Convert.ToString(Convert.ToDouble(Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila)));
+                                                    }
+                                                    catch (Exception e)
+                                                    {
+
+                                                    }
+                                                    break;
+                                                case "String":
+                                                    try
+                                                    {
+                                                        sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila);
+                                                    }
+                                                    catch (Exception e)
+                                                    {
+
+                                                    }
+                                                    break;
+                                                case "Bool":
+                                                    try
+                                                    {
+                                                        if (Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila).Equals("0") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila).Equals("1") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila).Equals("true") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila).Equals("false"))
+                                                        {
+                                                            sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila);
+                                                        }
+                                                    }
+                                                    catch (Exception e)
+                                                    {
+
+                                                    }
+                                                    break;
+                                                case "Char":
+
+                                                    if (Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila).Contains("'"))
+                                                    {
+                                                        try
+                                                        {
+                                                            sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila);
+                                                            Char tr = Convert.ToChar(sim.valor.Replace("\'", ""));
+
+                                                        }
+                                                        catch (Exception)
+                                                        {
+                                                        }
+
+                                                        try
+                                                        {
+                                                            int ti = Convert.ToInt32(sim.valor.Replace("\'", ""));
+                                                            sim.valor = Convert.ToString(Convert.ToChar((Char)Convert.ToInt32(ti)));
+                                                        }
+                                                        catch (Exception f)
+                                                        {
+                                                            error += "Linea: " + "Columna: " + " Error semantico, no es posible asignar un valor que no sea tipo Char a la variable \"" + sim.nombre + "\" .\n";
+
+
+                                                        }
+                                                    }
+                                                    break;
                                             }
                                         }
-
-                                        break;
-
+                                        tabla2.tabla.Add(sim);
                                     }
-                                    pila.pila.Push(tabla);
-                                    VariableMetodo(root.ChildNodes.ElementAt(0), tabla, pila);
-                                    pila.pila.Pop();
-                                    break;
-                                case "SI":
-                                    pila.pila.Push(tabla);
-                                    Si_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam);
-                                    pila.pila.Pop();
-                                    break;
-                                case "Print":
-                                    pila.pila.Push(tabla);
-                                    consola += Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila) + "\n";
-                                    pila.pila.Pop();
-                                    break;
-                                case "Hasta":
-                                    pila.pila.Push(tabla);
-                                    Hasta_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam);
-                                    pila.pila.Pop();
-                                    break;
-                                case "Mientras":
-                                    pila.pila.Push(tabla);
-                                    Mientras_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam);
-                                    pila.pila.Pop();
-                                    break;
+                                }
 
-                                case "selecciona":
-                                    pila.pila.Push(tabla);
-                                    Selecciona_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam);
-                                    pila.pila.Pop();
-                                    break;
+                                break;
 
                             }
-                        }
+                            pila.pila.Push(tabla);
+                            VariableMetodo(root.ChildNodes.ElementAt(0), tabla, pila);
+                            pila.pila.Pop();
+                            break;
+                        case "SI":
+                            pila.pila.Push(tabla);
+                            Si_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam, verd);
+                            pila.pila.Pop();
+                            break;
+                        case "Print":
+                            pila.pila.Push(tabla);
+                            consola += Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila) + "\n";
+                            pila.pila.Pop();
+                            break;
+                        case "Hasta":
+                            pila.pila.Push(tabla);
+                            Hasta_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam, verd);
+                            pila.pila.Pop();
+                            break;
+                        case "Mientras":
+                            pila.pila.Push(tabla);
+                            Mientras_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam, verd);
+                            pila.pila.Pop();
+                            break;
+
+                        case "selecciona":
+                            pila.pila.Push(tabla);
+                            Selecciona_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam, verd);
+                            pila.pila.Pop();
+                            break;
+
+                        case "detener":
+                            if (verd)
+                            {
+                                bre = false;
+                            }
+                            else
+                            {
+                                error += "Error semantico, no es posble utilizar la sentencia break si no es encuentra en un ciclo o en un select\n";
+                            }
+                            break;
+
                     }
                 }
-
             }
         }
-
-
-
-        private void Selecciona_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam)
+        private void Selecciona_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam,bool verd,bool brek)
         {
             Simbolos simb = new Simbolos();
             try {
@@ -401,106 +444,162 @@ namespace Crl.Analizador
                 simb.tipo = "Double";
                 simb.ambito = "Select";
                 simb.nombre = "sele";
-                ContenidoSelecciona(root.ChildNodes.ElementAt(5).ChildNodes.ElementAt(0),pila,tabla,tablam,simb);
+                defec = true;
+                ContenidoSelecciona(root.ChildNodes.ElementAt(5).ChildNodes.ElementAt(0),pila,tabla,tablam,simb,true);
+                contfo = true;
+
             }
             catch (Exception e) {
                 simb.valor = Calculadorametodo.ResolverOperacion(root, pila).Replace("'","");
                 simb.tipo = "Double";
                 simb.ambito = "Select";
                 simb.nombre = "sele";
-                ContenidoSelecciona(root.ChildNodes.ElementAt(5).ChildNodes.ElementAt(0), pila, tabla, tablam, simb);
-
+                defec = true;
+                ContenidoSelecciona(root.ChildNodes.ElementAt(5).ChildNodes.ElementAt(0), pila, tabla, tablam, simb,true);
+                contfo = true;
             }
         }
-
-        private void ContenidoSelecciona(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam,Simbolos simb)
+        private void ContenidoSelecciona(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam,Simbolos simb, bool verd, bool brek)
         {
-            if (root.ChildNodes.ElementAt(0).Equals("Contenidoswitch1")) {
-                ContenidoSelecciona(root.ChildNodes.ElementAt(0), pila, tabla, tablam, simb);
-                if (simb.tipo.Equals("Double")) {
-                    String[] dato = root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ToString().Split(' ');
-                    try {
-                        if (Convert.ToString(Convert.ToDouble(dato[0])).Equals(simb.valor))
-                        {
-                            Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(2), pila, tabla, tablam);
-
-                        }
-                        else {
-                            if (root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(3).ChildNodes.Count > 2) {
-                                Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(3).ChildNodes.ElementAt(2), pila, tabla, tablam);
-
-                            }
-                        }
-                    } catch (Exception e) {
-                        error += "El dato en el case del Switch no es de tipo Double";
-                    }
-                } else {
-                    String[] dato = root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ToString().Split(' ');
-                    if (Convert.ToString(Convert.ToDouble(dato[0])).Equals(simb.valor))
-                    {
-                        Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(2), pila, tabla, tablam);
-                    }
-                    else
-                    { 
-                        if (root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(3).ChildNodes.Count > 2)
-                        {
-                            Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(3).ChildNodes.ElementAt(2), pila, tabla, tablam);
-                        }
-                    }
-                }
-            }
-            else {
-                if (simb.tipo.Equals("Double"))
+            if (root.ChildNodes.ElementAt(0).ToString().Equals("Contenidoswitch1"))
+            {
+                ContenidoSelecciona(root.ChildNodes.ElementAt(0), pila, tabla, tablam, simb,true);
+                if (root.ChildNodes.ElementAt(1).ChildNodes.Count == 3&&contfo)
                 {
-                    String[] dato = root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ToString().Split(' ');
-                    try
+                    if (root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(2).ChildNodes.Count == 3)
                     {
-                        if (Convert.ToString(Convert.ToDouble(dato[0])).Equals(simb.valor))
-                        {
-                            Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(2), pila, tabla, tablam);
 
-                        }
-                        else
-                        {
-                            if (root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(3).ChildNodes.Count > 2)
-                            {
-                                Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(3).ChildNodes.ElementAt(2), pila, tabla, tablam);
+                        Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(2).ChildNodes.ElementAt(2), pila, tabla, tablam,true,brek);
+                           
+                        
 
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        error += "El dato en el case del Switch no es de tipo Double";
                     }
                 }
                 else
                 {
-                    String[] dato = root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ToString().Split(' ');
-                    if (Convert.ToString(Convert.ToDouble(dato[0])).Equals(simb.valor))
+
+                    if (simb.tipo.Equals("Double") && contfo)
                     {
-                        Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(2), pila, tabla, tablam);
+                        String[] dato = root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ToString().Split(' ');
+                        try
+                        {
+                            if (Convert.ToString(Convert.ToDouble(dato[0])).Equals(simb.valor))
+                            {
+                                Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(2), pila, tabla, tablam,true);
+                                
+                            }
+                            else
+                            {
+                                if (root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(3).ChildNodes.Count > 2)
+                                {
+                                    
+                                    Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(3).ChildNodes.ElementAt(2), pila, tabla, tablam, true);
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            error += "El dato en el case del Switch no es de tipo Double";
+                        }
                     }
                     else
                     {
-                        if (root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(3).ChildNodes.Count > 2)
+                        String[] dato = root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ToString().Split(' ');
+                        if (Convert.ToString(Convert.ToDouble(dato[0])).Equals(simb.valor) && contfo)
                         {
-                            Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(3).ChildNodes.ElementAt(2), pila, tabla, tablam);
+                           
+                            Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(2), pila, tabla, tablam, true);
+                        }
+                        else
+                        {
+                            if (root.ChildNodes.ElementAt(1).ChildNodes.Count == 4)
+                            {
+                                if (root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(3).ChildNodes.Count == 3)
+                                {
+                                    Contenido_Metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(3).ChildNodes.ElementAt(2), pila, tabla, tablam, true);
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (root.ChildNodes.ElementAt(0).ChildNodes.Count == 3 && contfo)
+                {
+                    if (root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(2).ChildNodes.Count == 3)
+                    {
+                        
+                            Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(2).ChildNodes.ElementAt(2), pila, tabla, tablam, true);
+                        
+
+                    }
+                }
+                else
+                {
+
+                    if (simb.tipo.Equals("Double") && contfo)
+                    {
+                        String[] dato = root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ToString().Split(' ');
+                        try
+                        {
+                            if (Convert.ToString(Convert.ToDouble(dato[0])).Equals(simb.valor))
+                            {
+                                Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(2), pila, tabla, tablam, true);
+                                
+                            }
+                            else
+                            {
+                                if (root.ChildNodes.ElementAt(0).ChildNodes.Count == 4)
+                                {
+                                    if (root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(3).ChildNodes.Count == 3)
+                                    {
+                                        Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(3).ChildNodes.ElementAt(2), pila, tabla, tablam, true);
+                                        
+                                    }
+
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            error += "El dato en el case del Switch no es de tipo Double";
+                        }
+                    }
+                    else
+                    {
+                        String[] dato = root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ToString().Split(' ');
+                        if (Convert.ToString(Convert.ToDouble(dato[0])).Equals(simb.valor) && contfo)
+                        {
+                            Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(2), pila, tabla, tablam, true);
+                        }
+                        else
+                        {
+                            if (root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(3).ChildNodes.Count > 2 && contfo)
+                            {
+                                Contenido_Metodo(root.ChildNodes.ElementAt(0).ChildNodes.ElementAt(3).ChildNodes.ElementAt(2), pila, tabla, tablam, true);
+                            }
                         }
                     }
                 }
             }
         }
 
-        private void Mientras_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam)
+        private void Mientras_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam, bool verd, bool brek)
         {
             if (Calculadorametodo.ResolverOperacion(root, pila).Equals("1") || Calculadorametodo.ResolverOperacion(root, pila).Equals("true") || Calculadorametodo.ResolverOperacion(root, pila).Equals("0") || Calculadorametodo.ResolverOperacion(root, pila).Equals("false"))
             {
-
                 while (Calculadorametodo.ResolverOperacion(root, pila).Equals("1") || Calculadorametodo.ResolverOperacion(root, pila).Equals("true"))
                 {
                     Tabla tb = new Tabla();
-                    Contenido_Metodo(root.ChildNodes.ElementAt(5), pila, tb, tablam);
+                    defec = true;
+                    Contenido_Metodo(root.ChildNodes.ElementAt(5), pila, tb, tablam, true);
+                    if (!contfo) {
+                        contfo = true;
+                        break;
+                    }
+                    
                 }
             }
             else
@@ -509,8 +608,7 @@ namespace Crl.Analizador
             }
         }
 
-
-        private void Hasta_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam)
+        private void Hasta_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam, bool verd, bool brek)
         {
             if (Calculadorametodo.ResolverOperacion(root, pila).Equals("1") || Calculadorametodo.ResolverOperacion(root, pila).Equals("true") || Calculadorametodo.ResolverOperacion(root, pila).Equals("0") || Calculadorametodo.ResolverOperacion(root, pila).Equals("false"))
             {
@@ -518,7 +616,9 @@ namespace Crl.Analizador
                 while (Calculadorametodo.ResolverOperacion(root, pila).Equals("0") || Calculadorametodo.ResolverOperacion(root, pila).Equals("false"))
                 {
                     Tabla tb = new Tabla();
-                    Contenido_Metodo(root.ChildNodes.ElementAt(5), pila, tb, tablam);
+                    defec = true;
+                    Contenido_Metodo(root.ChildNodes.ElementAt(5), pila, tb, tablam,true);
+                    contfo = true;
                 }
             }
             else
@@ -527,15 +627,15 @@ namespace Crl.Analizador
             }
         }
 
-        private void Si_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam)
+        private void Si_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam, bool verd, bool brek)
         {
             if (Calculadorametodo.ResolverOperacion(root, pila).Equals("1") || Calculadorametodo.ResolverOperacion(root, pila).Equals("true") || Calculadorametodo.ResolverOperacion(root, pila).Equals("0") || Calculadorametodo.ResolverOperacion(root, pila).Equals("false"))
             {
-
+                String asdd=Calculadorametodo.ResolverOperacion(root, pila);
                 if (Calculadorametodo.ResolverOperacion(root, pila).Equals("1") || Calculadorametodo.ResolverOperacion(root, pila).Equals("true"))
                 {
                     Tabla tb = new Tabla();
-                    Contenido_Metodo(root.ChildNodes.ElementAt(5), pila, tb, tablam);
+                    Contenido_Metodo(root.ChildNodes.ElementAt(5), pila, tb, tablam,verd);
                 }
                 else
                 {
@@ -544,7 +644,7 @@ namespace Crl.Analizador
                         if (root.ChildNodes.ElementAt(7).ChildNodes.Count > 3)
                         {
                             Tabla tb = new Tabla();
-                            Contenido_Metodo(root.ChildNodes.ElementAt(5), pila, tb, tablam);
+                            Contenido_Metodo(root.ChildNodes.ElementAt(7).ChildNodes.ElementAt(2), pila, tb, tablam,verd);
                         }
                     }
 
@@ -568,11 +668,12 @@ namespace Crl.Analizador
                     String[] tipo = root.ChildNodes.ElementAt(0).ToString().Split(' ');
 
                     stat_var2 = tipo[0];
+                    tipod = tipo[0];
 
-                    stat_val2 = Calculadora.ResolverOperacion(root.ChildNodes.ElementAt(2), tabla);
+                    stat_val2 = Calculadorametodo.ResolverOperacion(root, pila);
 
 
-                    VariableMetodo(root.ChildNodes.ElementAt(1), tabla,pila);
+                    ListaVariablemrtodo(root.ChildNodes.ElementAt(1), tabla,pila);
 
                     break;
 
@@ -603,25 +704,27 @@ namespace Crl.Analizador
                                 try
                                 {
 
-                                    int tr = Convert.ToInt32(Calculadora.ResolverOperacion(root.ChildNodes.ElementAt(2), tabla));
-                                    simbol.valor = Calculadora.ResolverOperacion(root.ChildNodes.ElementAt(2), tabla);
+                                    int tr = Convert.ToInt32(Calculadorametodo.ResolverOperacion(root, pila));
+                                    simbol.valor = Convert.ToString(tr);
                                     simbol.nombre = variable[0];
                                     simbol.tipo = tipo1[0];
+                                    simbol.ambito = "";
+                                    tabla.tabla.Add(simbol);
                                 }
                                 catch (Exception e)
                                 {
                                     try
                                     {
-                                        int ti = Convert.ToInt32(stat_val.Replace("\'", ""));
+                                        int ti = Convert.ToInt32(variable[0].Replace("\'", ""));
                                         simbol.nombre = variable[0];
-                                        simbol.tipo = stat_var;
-                                        simbol.valor = Convert.ToString((Char)Convert.ToInt32(stat_val));
-                                        simbol.ambito = "global";
+                                        simbol.tipo = variable[0];
+                                        simbol.valor = Convert.ToString((Char)Convert.ToInt32(variable[0]));
+                                        simbol.ambito = "";
                                         tabla.tabla.Add(simbol);
                                     }
                                     catch (Exception f)
                                     {
-                                        error += "Linea: " + "Columna: " + " Error sintactico, el tipo de dato no es valido \"" + stat_val + "\" .\n";
+                                        error += "Linea: " + "Columna: " + " Error sintactico, el tipo de dato no es valido \"" + variable[0] + "\" .\n";
 
                                     }
 
@@ -640,7 +743,7 @@ namespace Crl.Analizador
                                 }
                                 catch (Exception e)
                                 {
-                                    error += "Linea: " + "Columna: " + " Error sintactico, el tipo de dato no es valido \"" + tipo1[0] + "\" .\n";
+                                    error += "Linea: " + "Columna: " + " Error Semantico, se ntenta signar un dato que no es de tipo Double la variable \"" + variable[0] + "\".\n";
                                 }
                                 break;
                             case "Bool":
@@ -660,13 +763,13 @@ namespace Crl.Analizador
                                     {
                                         simbol.valor = Calculadorametodo.ResolverOperacion(root, pila);
 
-                                        error += "Linea: " + "Columna: " + " Error sintactico, el tipo de dato no es valido \"" + tipo1[0] + "\" .\n";
+                                        error += "Linea: " + "Columna: " + " Error Semantico, se ntenta signar un dato que no es de tipo Bool la variable \"" + variable[0] + "\".\n";
 
                                     }
                                 }
                                 catch (Exception e)
                                 {
-                                    error += "Linea: " + "Columna: " + " Error sintactico, el tipo de dato no es valido \"" + tipo1[0] + "\" .\n";
+                                    error += "Linea: " + "Columna: " + " Error Semantico, se ntenta signar un dato que no es de tipo Bool la variable \"" + variable[0] + "\".\n";
 
                                 }
                                 break;
@@ -703,7 +806,7 @@ namespace Crl.Analizador
                                     }
                                     catch (Exception f)
                                     {
-                                        error += "Linea: " + "Columna: " + " Error sintactico, el tipo de dato no es valido \"" + tipo1[0] + "\" .\n";
+                                        error += "Linea: " + "Columna: " + " Error Semantico, se ntenta signar un dato que no es de tipo Char la variable \"" + variable[0] + "\".\n";
 
                                     }
 
@@ -763,7 +866,7 @@ namespace Crl.Analizador
                             }
                             catch (Exception e)
                             {
-                                error += "Linea: " + "Columna: " + " Error sintactico, no se esta asignando un dato tipo Int a la variable\"" + variable[0] + "\" .\n";
+                                error += "Linea: " + "Columna: " + " Error Semantico, se ntenta signar un dato que no es de tipo Int la variable \"" + stat_val2 + "\".\n";
 
                             }
 
@@ -782,7 +885,7 @@ namespace Crl.Analizador
                             }
                             catch (Exception e)
                             {
-                                error += "Linea: " + "Columna: " + " Error sintactico, no se esta asignando un dato tipo Double a la variable\"" + variable[0] + "\" .\n";
+                                error += "Linea: " + "Columna: " + " Error Semantico, se ntenta signar un dato que no es de tipo Double la variable \"" + stat_val2 + "\".\n";
                             }
                             break;
                         case "Bool":
@@ -802,13 +905,13 @@ namespace Crl.Analizador
                                 else
                                 {
 
-                                    error += "Linea: " + "Columna: " + " Error sintactico, no se esta asignando un dato tipo Bool a la variable\"" + variable[0] + ".\n";
+                                    error += "Linea: " + "Columna: " + " Error Semantico, se ntenta signar un dato que no es de tipo Bool la variable \"" + stat_val2 + "\".\n";
 
                                 }
                             }
                             catch (Exception e)
                             {
-                                error += "Linea: " + "Columna: " + " Error sintactico, no se esta asignando un dato tipo Bool a la variable\"" + variable[0] + "\" .\n";
+                                error += "Linea: " + "Columna: " + " Error Semantico, se ntenta signar un dato que no es de tipo Bool la variable \"" + stat_val2 + "\".\n";
 
                             }
                             break;
@@ -847,7 +950,7 @@ namespace Crl.Analizador
                                 }
                                 catch (Exception f)
                                 {
-                                    error += "Linea: " + "Columna: " + " Error sintactico, no se esta asignando un dato tipo Char a la variable\"" + variable[0] + "\" .\n";
+                                    error += "Linea: " + "Columna: " + " Error Semantico, se ntenta signar un dato que no es de tipo Char la variable \"" + stat_val2 + "\".\n";
 
                                 }
 
@@ -893,7 +996,7 @@ namespace Crl.Analizador
                             }
                             catch (Exception e)
                             {
-                                error += "Linea: " + "Columna: " + " Error sintactico, el tipo de dato no es valido \"" + stat_val2 + "\" .\n";
+                                error += "Linea: " + "Columna: " + " Error Semantico, se ntenta signar un dato que no es de tipo Int la variable \"" + stat_val2 + "\".\n";
 
                             }
 
@@ -911,7 +1014,7 @@ namespace Crl.Analizador
                             }
                             catch (Exception e)
                             {
-                                error += "Linea: " + "Columna: " + " Error sintactico, el tipo de dato no es valido \"" + stat_val2 + "\" .\n";
+                                error += "Linea: " + "Columna: " + " Error Semantico, se ntenta signar un dato que no es de tipo Double la variable \"" + stat_val2 + "\".\n";
                             }
                             break;
                         case "Bool":
@@ -930,13 +1033,14 @@ namespace Crl.Analizador
                                 else
                                 {
 
-                                    error += "Linea: " + "Columna: " + " Error sintactico, el tipo de dato no es valido \"" + stat_val2 + "\" .\n";
+                                    error += "Linea: " + "Columna: " + " Error Semantico, se ntenta signar un dato que no es de tipo Bool la variable \"" + stat_val2 + "\".\n";
 
                                 }
                             }
                             catch (Exception e)
                             {
-                                error += "Linea: " + "Columna: " + " Error sintactico, el tipo de dato no es valido \"" + stat_val2 + "\" .\n";
+                                error += "Linea: " + "Columna: " + " Error Semantico, se ntenta signar un dato que no es de tipo Bool la variable \"" + stat_val2 + "\".\n";
+
 
                             }
                             break;
@@ -974,7 +1078,7 @@ namespace Crl.Analizador
                                 }
                                 catch (Exception f)
                                 {
-                                    error += "Linea: " + "Columna: " + " Error sintactico, el tipo de dato no es valido \"" + stat_val2 + "\" .\n";
+                                    error += "Linea: " + "Columna: " + " Error Semantico, se ntenta signar un dato que no es de tipo Char la variable \"" + stat_val2 + "\".\n";
 
                                 }
 
@@ -1043,7 +1147,9 @@ namespace Crl.Analizador
                             String[] tipo = root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(0).ToString().Split(' ');
                             simbol.tipo = tipo[0];
                             String[] nombre = root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(1).ToString().Split(' ');
+                            simbol.no = cont.ToString();
                             simbol.nombre = nombre[0];
+                            simbol.raiz = root.ChildNodes.ElementAt(1);
                             if (root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(3).ChildNodes.Count != 0)
                             {
                                 Parametros_metodo(root.ChildNodes.ElementAt(1).ChildNodes.ElementAt(3).ChildNodes.ElementAt(0), tablam, simbol);
