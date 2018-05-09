@@ -21,6 +21,7 @@ namespace Crl.Analizador
         public static String consola;
         public static PilaTS pilax;
         public static ParseTreeNode rai;
+        public Simbolos retmet=new Simbolos();
         bool ret;
         Double cont;
         public bool analizar(String cadena)
@@ -36,6 +37,7 @@ namespace Crl.Analizador
             TablaM tablam = new TablaM();
             PilaTS pila = new PilaTS();
             rai = raiz;
+           
             generarImagen(raiz);
             if (error != "")
             {
@@ -162,7 +164,7 @@ namespace Crl.Analizador
                                                 case "Int":
                                                     try
                                                     {
-                                                        sim.valor = Convert.ToString(Convert.ToInt32(Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila)));
+                                                        sim.valor = Convert.ToString(Convert.ToInt32(Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila, tablam)));
                                                     }
                                                     catch (Exception e)
                                                     {
@@ -172,7 +174,7 @@ namespace Crl.Analizador
                                                 case "Double":
                                                     try
                                                     {
-                                                        sim.valor = Convert.ToString(Convert.ToDouble(Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila)));
+                                                        sim.valor = Convert.ToString(Convert.ToDouble(Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila, tablam)));
                                                     }
                                                     catch (Exception e)
                                                     {
@@ -182,7 +184,7 @@ namespace Crl.Analizador
                                                 case "String":
                                                     try
                                                     {
-                                                        sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila);
+                                                        sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila, tablam);
                                                     }
                                                     catch (Exception e)
                                                     {
@@ -192,9 +194,9 @@ namespace Crl.Analizador
                                                 case "Bool":
                                                     try
                                                     {
-                                                        if (Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila).Equals("0") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila).Equals("1") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila).Equals("true") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila).Equals("false"))
+                                                        if (Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila, tablam).Equals("0") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila, tablam).Equals("1") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila, tablam).Equals("true") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila, tablam).Equals("false"))
                                                         {
-                                                            sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila);
+                                                            sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila, tablam);
                                                         }
                                                     }
                                                     catch (Exception e)
@@ -204,11 +206,11 @@ namespace Crl.Analizador
                                                     break;
                                                 case "Char":
 
-                                                    if (Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila).Contains("'"))
+                                                    if (Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila, tablam).Contains("'"))
                                                     {
                                                         try
                                                         {
-                                                            sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila);
+                                                            sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila, tablam);
                                                             Char tr = Convert.ToChar(sim.valor.Replace("\'", ""));
 
                                                         }
@@ -242,7 +244,7 @@ namespace Crl.Analizador
 
                             }
                             pila.pila.Push(tabla);
-                            VariableMetodo(root.ChildNodes.ElementAt(1), tabla, pila);
+                            VariableMetodo(root.ChildNodes.ElementAt(1), tabla, pila, tablam);
                             pila.pila.Pop();
                             break;
                         case "SI":
@@ -252,7 +254,7 @@ namespace Crl.Analizador
                             break;
                         case "Print":
                             pila.pila.Push(tabla);
-                            consola += Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila) + "\n";
+                            consola += Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila, tablam) + "\n";
                             pila.pila.Pop();
                             break;
                         case "Hasta":
@@ -297,6 +299,28 @@ namespace Crl.Analizador
                             brek = Para_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam, verd, brek);
                             pila.pila.Pop();
                             break;
+                        case "retornar":
+                            if (root.ChildNodes.ElementAt(1).ChildNodes.Count == 1)
+                            {
+                                ret = true;
+                            }
+                            else
+                            {
+                                retmet.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila, tablam);
+                                retmet.ambito = "";
+                                retmet.nombre = "llamada";
+                                retmet.tipo=""; 
+                                ret = true;
+                            }
+                            break;
+                        case "Llamada":
+                            pila.pila.Push(tabla);
+                            DatoSB retd = new DatoSB();
+                            retd = Llamada_Metodo(root.ChildNodes.ElementAt(1), pila, tabla, tablam, verd, brek);
+                            ret = false;
+                            brek = retd.brek;
+                            pila.pila.Pop();
+                            break;
 
                     }
 
@@ -329,7 +353,7 @@ namespace Crl.Analizador
                                                 case "Int":
                                                     try
                                                     {
-                                                        sim.valor = Convert.ToString(Convert.ToInt32(Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila)));
+                                                        sim.valor = Convert.ToString(Convert.ToInt32(Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila, tablam)));
                                                     }
                                                     catch (Exception e)
                                                     {
@@ -339,7 +363,7 @@ namespace Crl.Analizador
                                                 case "Double":
                                                     try
                                                     {
-                                                        sim.valor = Convert.ToString(Convert.ToDouble(Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila)));
+                                                        sim.valor = Convert.ToString(Convert.ToDouble(Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila, tablam)));
                                                     }
                                                     catch (Exception e)
                                                     {
@@ -349,7 +373,7 @@ namespace Crl.Analizador
                                                 case "String":
                                                     try
                                                     {
-                                                        sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila);
+                                                        sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila, tablam);
                                                     }
                                                     catch (Exception e)
                                                     {
@@ -359,9 +383,9 @@ namespace Crl.Analizador
                                                 case "Bool":
                                                     try
                                                     {
-                                                        if (Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila).Equals("0") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila).Equals("1") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila).Equals("true") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila).Equals("false"))
+                                                        if (Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila, tablam).Equals("0") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila, tablam).Equals("1") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila, tablam).Equals("true") || Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila, tablam).Equals("false"))
                                                         {
-                                                            sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila);
+                                                            sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila, tablam);
                                                         }
                                                     }
                                                     catch (Exception e)
@@ -371,11 +395,11 @@ namespace Crl.Analizador
                                                     break;
                                                 case "Char":
 
-                                                    if (Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila).Contains("'"))
+                                                    if (Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila, tablam).Contains("'"))
                                                     {
                                                         try
                                                         {
-                                                            sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila);
+                                                            sim.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila, tablam);
                                                             Char tr = Convert.ToChar(sim.valor.Replace("\'", ""));
 
                                                         }
@@ -406,7 +430,7 @@ namespace Crl.Analizador
 
                             }
                             pila.pila.Push(tabla);
-                            VariableMetodo(root.ChildNodes.ElementAt(0), tabla, pila);
+                            VariableMetodo(root.ChildNodes.ElementAt(0), tabla, pila, tablam);
                             pila.pila.Pop();
                             break;
                         case "SI":
@@ -416,7 +440,7 @@ namespace Crl.Analizador
                             break;
                         case "Print":
                             pila.pila.Push(tabla);
-                            consola += Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila) + "\n";
+                            consola += Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila, tablam) + "\n";
                             pila.pila.Pop();
                             break;
                         case "Hasta":
@@ -462,9 +486,167 @@ namespace Crl.Analizador
                             brek = Para_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam, verd, brek);
                             pila.pila.Pop();
                             break;
+                        case"Llamada":
+                            pila.pila.Push(tabla);
+                            DatoSB retd = new DatoSB();
+                            retd = Llamada_Metodo(root.ChildNodes.ElementAt(0), pila, tabla, tablam, verd, brek);
+                            ret = false;
+                            brek =retd.brek;
+                            pila.pila.Pop();
+                            break;
+                        case "retornar":
+                            if (root.ChildNodes.ElementAt(0).ChildNodes.Count == 1)
+                            {
+                                ret = true;
+                            }
+                            else {
+                                retmet.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila, tablam);
+                                retmet.ambito = "";
+                                retmet.nombre = "llamada";
+                                retmet.tipo = "";
+                                ret = true;
+                            }
+                            break;
                     }
+                    
                 }
             }
+            return brek;
+        }
+
+
+
+        public DatoSB Llamada_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam, bool verd, bool brek) {
+            String nombre =root.ChildNodes.ElementAt(0).ToString().Replace(" (Id)","");
+            bool erro = false;
+            DatoSB ret = new DatoSB();
+            List<SimbolosM> pr = new List<SimbolosM>();
+            foreach (SimbolosM sim in tablam.tablam) {
+                if (nombre.Equals(sim.nombre)) {
+                    pr.Add(sim);
+                    erro = true;
+                }
+            }
+
+            if (erro)
+            {
+                SimbolosM simbol = new SimbolosM();
+                Obtener_parametros(root.ChildNodes.ElementAt(2).ChildNodes.ElementAt(0), pila, tabla, tablam, verd, brek, simbol);
+                bool igual = false;
+
+                foreach (SimbolosM param in pr)
+                {
+                    if (root.ChildNodes.ElementAt(2).ChildNodes.Count != 0)
+                    {
+                       igual = Comparar_Parametros(param, simbol);
+                        if (igual) {
+                            int i = 0;
+                            Tabla tab =new Tabla();
+                            
+                            while (simbol.parametro.Count>i) {
+                                Simbolos simpar = new Simbolos();
+
+                                simpar.nombre = simbol.parametro[i].nombre;
+                                simpar.valor = simbol.parametro[i].valor;
+                                simpar.tipo= simbol.parametro[i].tipo;
+                                simpar.ambito="";
+                                tab.tabla.Add(simpar);
+                                i++;
+
+                            }
+                            
+
+                 
+                            ret.brek = Contenido_Metodo(param.raiz.ChildNodes.ElementAt(6), pila, tab, tablam, verd, brek);
+                            ret.retorno = retmet;
+                            break;
+                        }
+                    }
+                }
+
+            }
+            else {
+                error += "No se eocnotro el metodo o funcion " + nombre + "\n";
+            }
+            return ret;
+        }
+
+        private bool Comparar_Parametros(SimbolosM tabla, SimbolosM actual) {
+            int i = 0;
+            if (actual.parametro.Count == tabla.parametro.Count) {
+                while (actual.parametro.Count > i) {
+                    try
+                    {
+                        switch (tabla.parametro[i].tipo)
+                        {
+                            case "Int":
+                                actual.parametro[i].nombre = tabla.parametro[i].nombre;
+                                actual.parametro[i].tipo = "Int";
+                                actual.parametro[i].valor = Convert.ToString(Convert.ToInt32(actual.parametro[i].valor));
+
+                                break;
+                            case "Double":
+                                actual.parametro[i].nombre = tabla.parametro[i].nombre;
+                                actual.parametro[i].tipo = "Double";
+                                actual.parametro[i].valor = Convert.ToString(Convert.ToDouble(actual.parametro[i].valor));
+
+                                break;
+                            case "String":
+                                actual.parametro[i].nombre = tabla.parametro[i].nombre;
+                                actual.parametro[i].tipo = "Double";
+                                actual.parametro[i].valor = tabla.parametro[i].valor;
+                                break;
+                            case "Char":
+                                actual.parametro[i].nombre = tabla.parametro[i].nombre;
+                                actual.parametro[i].tipo = "Char";
+                                actual.parametro[i].valor = Convert.ToString(Convert.ToChar(actual.parametro[i].valor.Replace("'", "")));
+                                break;
+                            case "Bool":
+                                actual.parametro[i].nombre = tabla.parametro[i].nombre;
+                                actual.parametro[i].tipo = "Bool";
+                                if (actual.parametro[i].valor.Equals("true") || actual.parametro[i].valor.Equals("1") || actual.parametro[i].valor.Equals("0") || actual.parametro[i].valor.Equals("false"))
+                                {
+                                    actual.parametro[i].valor = actual.parametro[i].valor;
+                                }
+                                else
+                                {
+                                    error = "Los parametros no coinsiden con los tipos de dato en el metodo o funcion " + tabla.nombre;
+                                    return false;
+                                }
+                                break;
+                        }
+                    }
+                    catch (Exception e) {
+                        error = "Los parametros no coinsiden con los tipos de dato en el metodo o funcion " + tabla.nombre;
+                        return false;
+                    }
+
+                    i++;
+                }
+            }
+
+            return true;
+        }
+        private bool Obtener_parametros(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam, bool verd, bool brek,SimbolosM simbol) {
+            if (root.ChildNodes.ElementAt(0).ToString().Equals("Contenidollamada2"))
+            {
+                brek = Obtener_parametros(root.ChildNodes.ElementAt(0), pila, tabla, tablam, verd, brek,simbol);
+                Parametros par = new Parametros();
+                par.nombre = "";
+                par.tipo = "";
+                tipod = "";
+                par.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(1), pila, tablam);
+                simbol.parametro.Add(par);
+            }
+            else {
+                Parametros par = new Parametros();
+                par.nombre = "";
+                par.tipo = "";
+                tipod = "";
+                par.valor = Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(0), pila, tablam);
+                simbol.parametro.Add(par);
+            }
+
             return brek;
         }
         private bool Para_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam, bool verd, bool brek) {
@@ -478,14 +660,14 @@ namespace Crl.Analizador
 
                 try {
                     tipod = "Double";
-                    simb.valor = Convert.ToString(Convert.ToDouble(Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(2),pila)));
+                    simb.valor = Convert.ToString(Convert.ToDouble(Calculadorametodo.ResolverOperacion(root.ChildNodes.ElementAt(2),pila, tablam)));
                     Tabla tb = new Tabla();
                     tb.tabla.Add(simb);
                     pila.pila.Push(tb);
                     bool entro = true;
                     Tabla tab = new Tabla();
 
-                    while (Calculadorametodo.ResolverOperacion(root, pila).Equals("true") || Calculadorametodo.ResolverOperacion(root, pila).Equals("1")) {
+                    while (Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("true") || Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("1")) {
                         if (entro) {
                             entro = false;
                             brek = Contenido_Metodo(root.ChildNodes.ElementAt(7), pila, tb, tablam, true, brek);
@@ -589,7 +771,7 @@ namespace Crl.Analizador
         {
             Simbolos simb = new Simbolos();
             try {
-                simb.valor = Convert.ToString(Convert.ToDouble( Calculadorametodo.ResolverOperacion(root, pila)));
+                simb.valor = Convert.ToString(Convert.ToDouble( Calculadorametodo.ResolverOperacion(root, pila, tablam)));
                 simb.tipo = "Double";
                 simb.ambito = "Select";
                 simb.nombre = "sele";
@@ -598,7 +780,7 @@ namespace Crl.Analizador
 
             }
             catch (Exception e) {
-                simb.valor = Calculadorametodo.ResolverOperacion(root, pila).Replace("'","");
+                simb.valor = Calculadorametodo.ResolverOperacion(root, pila, tablam).Replace("'","");
                 simb.tipo = "Double";
                 simb.ambito = "Select";
                 simb.nombre = "sele";
@@ -735,9 +917,9 @@ namespace Crl.Analizador
         }
         private bool Mientras_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam, bool verd, bool brek)
         {
-            if (Calculadorametodo.ResolverOperacion(root, pila).Equals("1") || Calculadorametodo.ResolverOperacion(root, pila).Equals("true") || Calculadorametodo.ResolverOperacion(root, pila).Equals("0") || Calculadorametodo.ResolverOperacion(root, pila).Equals("false"))
+            if (Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("1") || Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("true") || Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("0") || Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("false"))
             {
-                while (Calculadorametodo.ResolverOperacion(root, pila).Equals("1") || Calculadorametodo.ResolverOperacion(root, pila).Equals("true"))
+                while (Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("1") || Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("true"))
                 {
                     Tabla tb = new Tabla();
                     defec = true;
@@ -763,10 +945,10 @@ namespace Crl.Analizador
         }
         private bool Hasta_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam, bool verd, bool brek)
         {
-            if (Calculadorametodo.ResolverOperacion(root, pila).Equals("1") || Calculadorametodo.ResolverOperacion(root, pila).Equals("true") || Calculadorametodo.ResolverOperacion(root, pila).Equals("0") || Calculadorametodo.ResolverOperacion(root, pila).Equals("false"))
+            if (Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("1") || Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("true") || Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("0") || Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("false"))
             {
 
-                while (Calculadorametodo.ResolverOperacion(root, pila).Equals("0") || Calculadorametodo.ResolverOperacion(root, pila).Equals("false"))
+                while (Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("0") || Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("false"))
                 {
                    
                     Tabla tb = new Tabla();
@@ -794,10 +976,10 @@ namespace Crl.Analizador
         }
         private bool Si_Metodo(ParseTreeNode root, PilaTS pila, Tabla tabla, TablaM tablam, bool verd, bool brek)
         {
-            if (Calculadorametodo.ResolverOperacion(root, pila).Equals("1") || Calculadorametodo.ResolverOperacion(root, pila).Equals("true") || Calculadorametodo.ResolverOperacion(root, pila).Equals("0") || Calculadorametodo.ResolverOperacion(root, pila).Equals("false"))
+            if (Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("1") || Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("true") || Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("0") || Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("false"))
             {
-                String asdd=Calculadorametodo.ResolverOperacion(root, pila);
-                if (Calculadorametodo.ResolverOperacion(root, pila).Equals("1") || Calculadorametodo.ResolverOperacion(root, pila).Equals("true"))
+                String asdd=Calculadorametodo.ResolverOperacion(root, pila, tablam);
+                if (Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("1") || Calculadorametodo.ResolverOperacion(root, pila, tablam).Equals("true"))
                 {
                     Tabla tb = new Tabla();
                     brek = Contenido_Metodo(root.ChildNodes.ElementAt(5), pila, tb, tablam,verd,brek);
@@ -826,7 +1008,7 @@ namespace Crl.Analizador
         static String stat_var2;
         static String stat_val2;
  
-        private void VariableMetodo(ParseTreeNode root, Tabla tabla,PilaTS pila)
+        private void VariableMetodo(ParseTreeNode root, Tabla tabla,PilaTS pila,TablaM tablam)
         {
             switch (root.ChildNodes.ElementAt(1).ToString())
             {
@@ -836,7 +1018,7 @@ namespace Crl.Analizador
                     stat_var2 = tipo[0];
                     tipod = tipo[0];
 
-                    stat_val2 = Calculadorametodo.ResolverOperacion(root, pila);
+                    stat_val2 = Calculadorametodo.ResolverOperacion(root, pila, tablam);
 
 
                     ListaVariablemrtodo(root.ChildNodes.ElementAt(1), tabla,pila);
@@ -870,7 +1052,7 @@ namespace Crl.Analizador
                                 try
                                 {
 
-                                    int tr = Convert.ToInt32(Calculadorametodo.ResolverOperacion(root, pila));
+                                    int tr = Convert.ToInt32(Calculadorametodo.ResolverOperacion(root, pila, tablam));
                                     simbol.valor = Convert.ToString(tr);
                                     simbol.nombre = variable[0];
                                     simbol.tipo = tipo1[0];
@@ -900,7 +1082,7 @@ namespace Crl.Analizador
                                 tipod = "Double";
                                 try
                                 {
-                                    Double tr = Convert.ToDouble(Calculadorametodo.ResolverOperacion(root, pila));
+                                    Double tr = Convert.ToDouble(Calculadorametodo.ResolverOperacion(root, pila, tablam));
                                     simbol.valor = Convert.ToString(tr);
                                     simbol.nombre = variable[0];
                                     simbol.tipo = tipo1[0];
@@ -917,7 +1099,7 @@ namespace Crl.Analizador
                                 try
                                 {
 
-                                    simbol.valor = Calculadorametodo.ResolverOperacion(root, pila);
+                                    simbol.valor = Calculadorametodo.ResolverOperacion(root, pila, tablam);
                                     if (simbol.valor.Equals("0") || simbol.valor.Equals("1") || simbol.valor.Equals("false") || simbol.valor.Equals("true"))
                                     {
                                         simbol.nombre = variable[0];
@@ -927,7 +1109,7 @@ namespace Crl.Analizador
                                     }
                                     else
                                     {
-                                        simbol.valor = Calculadorametodo.ResolverOperacion(root, pila);
+                                        simbol.valor = Calculadorametodo.ResolverOperacion(root, pila, tablam);
 
                                         error += "Linea: " + "Columna: " + " Error Semantico, se ntenta signar un dato que no es de tipo Bool la variable \"" + variable[0] + "\".\n";
 
@@ -943,7 +1125,7 @@ namespace Crl.Analizador
                                 tipod = "String";
                                 simbol.nombre = variable[0];
                                 simbol.tipo = tipo1[0];
-                                simbol.valor = Calculadorametodo.ResolverOperacion(root, pila);
+                                simbol.valor = Calculadorametodo.ResolverOperacion(root, pila, tablam);
                                 simbol.ambito = "";
                                 tabla.tabla.Add(simbol);
 
@@ -952,7 +1134,7 @@ namespace Crl.Analizador
                                 tipod = "Char";
                                 try
                                 {
-                                    simbol.valor = Calculadorametodo.ResolverOperacion(root, pila);
+                                    simbol.valor = Calculadorametodo.ResolverOperacion(root, pila, tablam);
 
                                     Char tr = Convert.ToChar(simbol.valor.Replace("\'", ""));
                                     simbol.nombre = variable[0];
@@ -1408,6 +1590,7 @@ namespace Crl.Analizador
                                     int tr = Convert.ToInt32(simbol.valor);
                                     simbol.nombre = variable[0];
                                     simbol.tipo = tipo1[0];
+                                    simbol.ambito = "global";
                                     tabla.tabla.Add(simbol);
                                 }
                                 catch (Exception e)
@@ -1437,7 +1620,7 @@ namespace Crl.Analizador
                                     Double tr = Convert.ToDouble(simbol.valor);
                                     simbol.nombre = variable[0];
                                     simbol.tipo = tipo1[0];
-                                    simbol.ambito = "";
+                                    simbol.ambito = "global";
                                     tabla.tabla.Add(simbol);
                                 }
                                 catch (Exception e)
@@ -1467,7 +1650,7 @@ namespace Crl.Analizador
                                     {
                                         simbol.nombre = variable[0];
                                         simbol.tipo = tipo1[0];
-                                        simbol.ambito = "";
+                                        simbol.ambito = "global";
                                         tabla.tabla.Add(simbol);
                                     }
                                     else
@@ -1488,7 +1671,7 @@ namespace Crl.Analizador
                                 simbol.nombre = variable[0];
                                 simbol.tipo = tipo1[0];
                                 simbol.valor = Calculadora.ResolverOperacion(root.ChildNodes.ElementAt(2), tabla);
-                                simbol.ambito = "";
+                                simbol.ambito = "global";
                                 tabla.tabla.Add(simbol);
 
                                 break;
@@ -1501,7 +1684,7 @@ namespace Crl.Analizador
                                     Char tr = Convert.ToChar(simbol.valor.Replace("\'", ""));
                                     simbol.nombre = variable[0];
                                     simbol.tipo = tipo1[0];
-                                    simbol.ambito = "";
+                                    simbol.ambito = "global";
                                     tabla.tabla.Add(simbol);
                                 }
                                 catch (Exception e)
@@ -1512,7 +1695,7 @@ namespace Crl.Analizador
                                         simbol.nombre = variable[0];
                                         simbol.valor = Convert.ToString((Char)ti);
                                         simbol.tipo = tipo1[0];
-                                        simbol.ambito = "";
+                                        simbol.ambito = "global";
                                         tabla.tabla.Add(simbol);
                                     }
                                     catch (Exception f)
@@ -1569,7 +1752,7 @@ namespace Crl.Analizador
                                 int tr = Convert.ToInt32(stat_val);
                                 simbol.valor = stat_val;
                                 simbol.tipo = stat_var;
-                                simbol.ambito = "";
+                                simbol.ambito = "global";
                                 tabla.tabla.Add(simbol);
                             }
                             catch (Exception e)
@@ -1598,7 +1781,7 @@ namespace Crl.Analizador
                                 Double tr = Convert.ToDouble(stat_val);
                                 simbol.valor = stat_val;
                                 simbol.tipo = stat_var;
-                                simbol.ambito = "";
+                                simbol.ambito = "global";
                                 tabla.tabla.Add(simbol);
                             }
                             catch (Exception e)
@@ -1628,7 +1811,7 @@ namespace Crl.Analizador
                                     simbol.valor = stat_val;
 
                                     simbol.tipo = stat_var;
-                                    simbol.ambito = "";
+                                    simbol.ambito = "global";
                                     tabla.tabla.Add(simbol);
                                 }
                                 else
@@ -1649,7 +1832,7 @@ namespace Crl.Analizador
                             simbol.nombre = variable[0];
                             simbol.tipo = stat_var;
                             simbol.valor = stat_val;
-                            simbol.ambito = "";
+                            simbol.ambito = "global";
                             tabla.tabla.Add(simbol);
 
                             break;
@@ -1662,7 +1845,7 @@ namespace Crl.Analizador
                                 Char tr = Convert.ToChar(stat_val.Replace("\'", ""));
                                 simbol.tipo = stat_var;
                                 simbol.valor = stat_val;
-                                simbol.ambito = "";
+                                simbol.ambito = "global";
                                 tabla.tabla.Add(simbol);
                             }
                             catch (Exception e)
@@ -1674,7 +1857,7 @@ namespace Crl.Analizador
                                     int ti = Convert.ToInt32(stat_val.Replace("\'", ""));
                                     simbol.tipo = stat_var;
                                     simbol.valor = Convert.ToString((Char)Convert.ToInt32(stat_val));
-                                    simbol.ambito = "";
+                                    simbol.ambito = "global";
                                     tabla.tabla.Add(simbol);
                                 }
                                 catch (Exception f)
@@ -1720,7 +1903,7 @@ namespace Crl.Analizador
                                 simbol.valor = stat_val;
                                 simbol.nombre = variable[0];
                                 simbol.tipo = stat_var;
-                                simbol.ambito = "";
+                                simbol.ambito = "global";
                                 tabla.tabla.Add(simbol);
                             }
                             catch (Exception e)
@@ -1748,7 +1931,7 @@ namespace Crl.Analizador
                                 simbol.valor = stat_val;
                                 simbol.nombre = variable[0];
                                 simbol.tipo = stat_var;
-                                simbol.ambito = "";
+                                simbol.ambito = "global";
                                 tabla.tabla.Add(simbol);
                             }
                             catch (Exception e)
@@ -1777,7 +1960,7 @@ namespace Crl.Analizador
 
                                     simbol.nombre = variable[0];
                                     simbol.tipo = stat_var;
-                                    simbol.ambito = "";
+                                    simbol.ambito = "global";
                                     tabla.tabla.Add(simbol);
                                 }
                                 else
@@ -1798,7 +1981,7 @@ namespace Crl.Analizador
                             simbol.nombre = variable[0];
                             simbol.tipo = stat_var;
                             simbol.valor = stat_val;
-                            simbol.ambito = "";
+                            simbol.ambito = "global";
                             tabla.tabla.Add(simbol);
 
                             break;
@@ -1811,7 +1994,7 @@ namespace Crl.Analizador
                                 simbol.nombre = variable[0];
                                 simbol.tipo = stat_var;
                                 simbol.valor = stat_val;
-                                simbol.ambito = "";
+                                simbol.ambito = "global";
                                 tabla.tabla.Add(simbol);
                             }
                             catch (Exception e)
@@ -1822,7 +2005,7 @@ namespace Crl.Analizador
                                     simbol.nombre = variable[0];
                                     simbol.tipo = stat_var;
                                     simbol.valor = Convert.ToString((Char)Convert.ToInt32(stat_val));
-                                    simbol.ambito = "";
+                                    simbol.ambito = "global";
                                     tabla.tabla.Add(simbol);
                                 }
                                 catch (Exception f)
