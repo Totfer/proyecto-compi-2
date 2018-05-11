@@ -4,13 +4,14 @@ using System.Linq;
 using System.Web;
 using Irony.Parsing;
 using Crl.Pila;
+using Crl.TablaMetodos;
 
 namespace Crl.Analizador
 {
     public class Calculadorametodo
     {
         public static String dato;
-        public static String ResolverOperacion(ParseTreeNode root, PilaTS tabla)
+        public static String ResolverOperacion(ParseTreeNode root, PilaTS tabla,TablaM tablam)
         {
 
             String retorno = root.ToString();
@@ -20,9 +21,16 @@ namespace Crl.Analizador
                 String a = hijo.ToString();
                 if (hijo.ToString().Equals("Expd") && !root.ToString().Equals("Expd"))
                 {
-                    String resultado = Expresion(hijo, tabla);
+                    String resultado = Expresion(hijo, tabla, tablam);
                     dato = resultado;
-                    retorno = resultado;
+                    if (resultado != null)
+                    {
+                        retorno = resultado;
+
+                    }
+                    else {
+                        retorno = resultado;
+                    }
                 }
 
                // ResolverOperacion(hijo, tabla);
@@ -33,7 +41,7 @@ namespace Crl.Analizador
         }
 
 
-        public static String Expresion(ParseTreeNode root, PilaTS tabla)
+        public static String Expresion(ParseTreeNode root, PilaTS tabla,TablaM tablam) 
         {
             String ass = root.ToString();
             switch (root.ChildNodes.Count)
@@ -44,14 +52,52 @@ namespace Crl.Analizador
                     String retorno = "";
                     if (numero[0].Equals("Llamada"))
                     {
+                        String[] numero1 = (root.ChildNodes.ElementAt(0).ToString().Split(' '));
+
                         Simbolos sm = new Simbolos();
                         Tabla tb = new Tabla();
-                        Sintactico sin = new Sintactico();
+                        Compilador sin = new Compilador();
+                        PilaTS pl = new PilaTS();
+                        Tabla tabla1 = new Tabla();
+                        bool cond = false;
+                        bool cond2 = true;
+                        foreach (Tabla tab in tabla.pila) {
+                            foreach (Simbolos simb in tab.tabla)
+                            {
+                                if (cond2) {
+                                    tabla1 = tab;
+                                    cond2 = false;
+                                }
+                                if (simb.ambito.Equals("global")) {
+                                    pl.pila.Push(tab);
+                                    pl.pila.Push(tabla1);
+                                    cond = true;
+                                    break;
+                                }
+                            }
+                            if (cond) { break; }
+                        }
+                        int x = 0;
+                        while (tablam.tablam.Count>x) {
 
-                        sm = sin.Llamada_Metodo(root.ChildNodes.ElementAt(0), tabla, tb);
+                            if (numero[0].Equals(tablam.tablam[x].nombre)) {
 
-                        numero[0] = sm.valor;
+                                break;
+                            }
+                            x++;
 
+                        }
+                        DatoSB dato = new DatoSB();
+                        dato = sin.Llamada_Metodo(root.ChildNodes.ElementAt(0), pl, tb, tablam,false,true);
+                        sm = dato.retorno;
+                        if (sm.valor == null)
+                        {
+                            numero[0] = "";
+                        }
+                        else
+                        {
+                            numero[0] = sm.valor;
+                        }
 
                         switch (sin.tipom)
                         {
@@ -62,7 +108,7 @@ namespace Crl.Analizador
                                 }
                                 catch (Exception e)
                                 {
-                                    Sintactico.error = "Error semantico en el retorno del metodo "+sm.nombre+ ". Se debe retornar un dato tipo Int\n";
+                                    Compilador.error = "Error semantico en el retorno del metodo "+sm.nombre+ ". Se debe retornar un dato tipo Int\n";
                                 }
                                 break;
                             case "Bool":
@@ -72,7 +118,7 @@ namespace Crl.Analizador
                                 }
                                 else
                                 {
-                                    Sintactico.error = "Error semantico en el retorno del metodo " + sm.nombre + ". Se debe retornar un dato tipo Bool\n";
+                                    Compilador.error = "Error semantico en el retorno del metodo " + sm.nombre + ". Se debe retornar un dato tipo Bool\n";
                                 }
                                 break;
                             case "Double":
@@ -82,7 +128,7 @@ namespace Crl.Analizador
                                 }
                                 catch (Exception e)
                                 {
-                                    Sintactico.error = "Error semantico en el retorno del metodo " + sm.nombre + ". Se debe retornar un dato tipo Double\n";
+                                    Compilador.error = "Error semantico en el retorno del metodo " + sm.nombre + ". Se debe retornar un dato tipo Double\n";
                                 }
                                 break;
                             case "String":
@@ -95,7 +141,7 @@ namespace Crl.Analizador
                                 }
                                 else
                                 {
-                                    Sintactico.error = "Error semantico en el retorno del metodo " + sm.nombre + ". Se debe retornar un dato tipo Char\n";
+                                    Compilador.error = "Error semantico en el retorno del metodo " + sm.nombre + ". Se debe retornar un dato tipo Char\n";
                                 }
                                 break;
                         }
@@ -124,7 +170,7 @@ namespace Crl.Analizador
                         {
                             retorno = "";
                         }
-                        else if (Sintactico.tipod.Equals("String"))
+                        else if (Compilador.tipod.Equals("String"))
                         {
                             bool bl = false;
                             foreach (Tabla tab in tabla.pila)
@@ -141,10 +187,16 @@ namespace Crl.Analizador
                                 }
                                 if (bl) { break; }
                             }
+                            if (retorno.Equals("true")) {
+                                retorno = "1";
+                            }else if (retorno.Equals("false"))
+                            {
+                                retorno = "0";
+                            }
                             retorno = "`" + retorno + "`";
 
                         }
-                        else if (Sintactico.tipod.Equals("Bool"))
+                        else if (Compilador.tipod.Equals("Bool"))
                         {
                             bool bl = false;
                             foreach (Tabla tab in tabla.pila)
@@ -179,9 +231,14 @@ namespace Crl.Analizador
                         {
                             retorno = "0";
                         }
-                        else if ((Sintactico.tipod.Equals("Double") && retorno.Contains("'")) || (Sintactico.tipod.Equals("Int") && retorno.Contains("'")))
+                        else if ((Compilador.tipod.Equals("Double") && retorno.Contains("'")) || (Compilador.tipod.Equals("Int") && retorno.Contains("'")))
                         {
-                            retorno = Convert.ToString((int)Convert.ToChar(retorno.Replace("'", "")));
+                            try
+                            {
+                                retorno = Convert.ToString((int)Convert.ToChar(retorno.Replace("'", "")));
+                            }
+                            catch (Exception e) {
+                            }
                         }
                         else
                         {
@@ -190,7 +247,7 @@ namespace Crl.Analizador
                             {
                                 foreach (Simbolos sb in tab.tabla)
                                 {
-                                    if (sb.nombre.Equals(numero[0]))
+                                    if (sb.nombre.Equals(numero[0].Replace("'","")))
                                     {
                                         bl = true;
                                         if (sb.tipo.Equals("Char"))
@@ -215,7 +272,7 @@ namespace Crl.Analizador
                 case 2:
                     if (root.ChildNodes.ElementAt(0).ToString().Substring(0, 1).Equals("!"))
                     {
-                        if (Expresion(root.ChildNodes.ElementAt(1), tabla).Equals("true"))
+                        if (Expresion(root.ChildNodes.ElementAt(1), tabla, tablam).Equals("true"))
                         {
                             return "false";
                         }
@@ -224,12 +281,12 @@ namespace Crl.Analizador
                     else
                     {
 
-                        return Convert.ToString(-1 * Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(1), tabla)));
+                        return Convert.ToString(-1 * Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(1), tabla, tablam)));
                     }
                 case 3:
                     if (root.ChildNodes.ElementAt(1).ToString().Substring(0, 2).Equals("&&"))
                     {
-                        if (Expresion(root.ChildNodes.ElementAt(0), tabla).Equals("true") && Expresion(root.ChildNodes.ElementAt(2), tabla).Equals("true"))
+                        if (Expresion(root.ChildNodes.ElementAt(0), tabla, tablam).Equals("true") && Expresion(root.ChildNodes.ElementAt(2), tabla, tablam).Equals("true"))
                         {
                             return "true";
                         }
@@ -237,7 +294,7 @@ namespace Crl.Analizador
                     }
                     else if (root.ChildNodes.ElementAt(1).ToString().Substring(0, 2).Equals(">="))
                     {
-                        if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla)) >= Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla)))
+                        if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla, tablam)) >= Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla, tablam)))
                         {
                             return "true";
                         }
@@ -245,7 +302,7 @@ namespace Crl.Analizador
                     }
                     else if (root.ChildNodes.ElementAt(1).ToString().Substring(0, 2).Equals("||"))
                     {
-                        if (Expresion(root.ChildNodes.ElementAt(0), tabla).Equals("true") || Expresion(root.ChildNodes.ElementAt(2), tabla).Equals("true"))
+                        if (Expresion(root.ChildNodes.ElementAt(0), tabla, tablam).Equals("true") || Expresion(root.ChildNodes.ElementAt(2), tabla, tablam).Equals("true"))
                         {
                             return "true";
                         }
@@ -253,7 +310,7 @@ namespace Crl.Analizador
                     }
                     else if (root.ChildNodes.ElementAt(1).ToString().Substring(0, 2).Equals("|&"))
                     {
-                        if ((Expresion(root.ChildNodes.ElementAt(0), tabla).Equals("true") || Expresion(root.ChildNodes.ElementAt(2), tabla).Equals("true")) || (Expresion(root.ChildNodes.ElementAt(0), tabla).Equals("false") || Expresion(root.ChildNodes.ElementAt(2), tabla).Equals("false")))
+                        if ((Expresion(root.ChildNodes.ElementAt(0), tabla, tablam).Equals("true") || Expresion(root.ChildNodes.ElementAt(2), tabla, tablam).Equals("true")) || (Expresion(root.ChildNodes.ElementAt(0), tabla, tablam).Equals("false") || Expresion(root.ChildNodes.ElementAt(2), tabla, tablam).Equals("false")))
                         {
                             return "false";
                         }
@@ -263,7 +320,7 @@ namespace Crl.Analizador
                     else if (root.ChildNodes.ElementAt(1).ToString().Substring(0, 2).Equals("<="))
                     {
 
-                        if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla)) <= Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla)))
+                        if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla, tablam)) <= Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla, tablam)))
                         {
                             return "true";
                         }
@@ -273,7 +330,7 @@ namespace Crl.Analizador
                     else if (root.ChildNodes.ElementAt(1).ToString().Substring(0, 1).Equals("~"))
                     {
 
-                        if (Expresion(root.ChildNodes.ElementAt(0), tabla).Trim().ToLower() == Expresion(root.ChildNodes.ElementAt(2), tabla).Trim().ToLower())
+                        if (Expresion(root.ChildNodes.ElementAt(0), tabla, tablam).Trim().ToLower() == Expresion(root.ChildNodes.ElementAt(2), tabla, tablam).Trim().ToLower())
                         {
                             return "true";
                         }
@@ -284,7 +341,7 @@ namespace Crl.Analizador
                     {
                         try
                         {
-                            if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla)) == Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla)))
+                            if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla, tablam)) == Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla, tablam)))
                             {
                                 return "true";
                             }
@@ -292,7 +349,7 @@ namespace Crl.Analizador
                         }
                         catch (Exception e)
                         {
-                            if (Expresion(root.ChildNodes.ElementAt(0), tabla) == Expresion(root.ChildNodes.ElementAt(2), tabla))
+                            if (Expresion(root.ChildNodes.ElementAt(0), tabla, tablam) == Expresion(root.ChildNodes.ElementAt(2), tabla, tablam))
                             {
                                 return "true";
                             }
@@ -305,7 +362,7 @@ namespace Crl.Analizador
                     {
                         try
                         {
-                            if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla)) != Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla)))
+                            if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla, tablam)) != Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla, tablam)))
                             {
                                 return "true";
                             }
@@ -313,7 +370,7 @@ namespace Crl.Analizador
                         }
                         catch (Exception e)
                         {
-                            if (Expresion(root.ChildNodes.ElementAt(0), tabla) != Expresion(root.ChildNodes.ElementAt(2), tabla))
+                            if (Expresion(root.ChildNodes.ElementAt(0), tabla, tablam) != Expresion(root.ChildNodes.ElementAt(2), tabla, tablam))
                             {
                                 return "true";
                             }
@@ -331,7 +388,7 @@ namespace Crl.Analizador
                                 try
                                 {
 
-                                    return Convert.ToString(Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla)) + Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla)));
+                                    return Convert.ToString(Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla, tablam)) + Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla, tablam)));
                                 }
                                 catch (Exception e)
                                 {
@@ -341,12 +398,12 @@ namespace Crl.Analizador
 
                                     if (root.ChildNodes.ElementAt(0).ToString().Equals("Expd"))
                                     {
-                                        b1 = Expresion(root.ChildNodes.ElementAt(0), tabla);
+                                        b1 = Expresion(root.ChildNodes.ElementAt(0), tabla, tablam);
                                     }
                                     if (root.ChildNodes.ElementAt(2).ToString().Equals("Expd"))
                                     {
 
-                                        b2 = Expresion(root.ChildNodes.ElementAt(2), tabla);
+                                        b2 = Expresion(root.ChildNodes.ElementAt(2), tabla, tablam);
                                     }
 
 
@@ -411,24 +468,24 @@ namespace Crl.Analizador
                                 }
                             case "-":
 
-                                return Convert.ToString(Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla)) - Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla)));
+                                return Convert.ToString(Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla, tablam)) - Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla, tablam)));
                             case "%":
 
-                                return Convert.ToString(Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla)) % Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla)));
+                                return Convert.ToString(Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla, tablam)) % Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla, tablam)));
                             case "*":
 
 
-                                return Convert.ToString(Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla)) * Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla)));
+                                return Convert.ToString(Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla, tablam)) * Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla, tablam)));
                             case "/":
 
-                                return Convert.ToString(Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla)) / Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla)));
+                                return Convert.ToString(Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla, tablam)) / Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla, tablam)));
                             case "^":
 
-                                return Convert.ToString(Math.Pow(Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla)), Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla)))); ;
+                                return Convert.ToString(Math.Pow(Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla, tablam)), Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla, tablam)))); ;
                             case "==":
                                 try
                                 {
-                                    if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla)) == Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla)))
+                                    if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla, tablam)) == Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla, tablam)))
                                     {
                                         return "true";
                                     }
@@ -436,7 +493,7 @@ namespace Crl.Analizador
                                 }
                                 catch (Exception e)
                                 {
-                                    if (Expresion(root.ChildNodes.ElementAt(0), tabla) == Expresion(root.ChildNodes.ElementAt(2), tabla))
+                                    if (Expresion(root.ChildNodes.ElementAt(0), tabla, tablam) == Expresion(root.ChildNodes.ElementAt(2), tabla, tablam))
                                     {
                                         return "true";
                                     }
@@ -446,49 +503,49 @@ namespace Crl.Analizador
                                 }
                             case "!=":
 
-                                if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla)) != Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla)))
+                                if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla, tablam)) != Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla, tablam)))
                                 {
                                     return "true";
                                 }
                                 return "false";
                             case "<":
 
-                                if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla)) < Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla)))
+                                if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla, tablam)) < Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla, tablam)))
                                 {
                                     return "true";
                                 }
                                 return "false";
                             case "~":
 
-                                if (Expresion(root.ChildNodes.ElementAt(0), tabla).Trim().ToLower() == Expresion(root.ChildNodes.ElementAt(2), tabla).Trim().ToLower())
+                                if (Expresion(root.ChildNodes.ElementAt(0), tabla, tablam).Trim().ToLower() == Expresion(root.ChildNodes.ElementAt(2), tabla, tablam).Trim().ToLower())
                                 {
                                     return "true";
                                 }
                                 return "false";
                             case "<=":
 
-                                if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla)) <= Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla)))
+                                if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla, tablam)) <= Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla, tablam)))
                                 {
                                     return "true";
                                 }
                                 return "false";
                             case ">":
 
-                                if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla)) > Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla)))
+                                if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla, tablam)) > Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla, tablam)))
                                 {
                                     return "true";
                                 }
                                 return "false";
                             case ">=":
 
-                                if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla)) >= Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla)))
+                                if (Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(0), tabla, tablam)) >= Convert.ToDouble(Expresion(root.ChildNodes.ElementAt(2), tabla, tablam)))
                                 {
                                     return "true";
                                 }
                                 return "false";
                             case "&&":
 
-                                if (Expresion(root.ChildNodes.ElementAt(0), tabla).Equals("true") && Expresion(root.ChildNodes.ElementAt(2), tabla).Equals("true"))
+                                if (Expresion(root.ChildNodes.ElementAt(0), tabla, tablam).Equals("true") && Expresion(root.ChildNodes.ElementAt(2), tabla, tablam).Equals("true"))
                                 {
                                     return "true";
                                 }
@@ -496,14 +553,14 @@ namespace Crl.Analizador
 
                             case "||":
 
-                                if (Expresion(root.ChildNodes.ElementAt(0), tabla).Equals("true") || Expresion(root.ChildNodes.ElementAt(2), tabla).Equals("true"))
+                                if (Expresion(root.ChildNodes.ElementAt(0), tabla, tablam).Equals("true") || Expresion(root.ChildNodes.ElementAt(2), tabla, tablam).Equals("true"))
                                 {
                                     return "true";
                                 }
                                 return "false";
                             case "|&":
 
-                                if (Expresion(root.ChildNodes.ElementAt(0), tabla).Equals("true") || Expresion(root.ChildNodes.ElementAt(2), tabla).Equals("true"))
+                                if (Expresion(root.ChildNodes.ElementAt(0), tabla, tablam).Equals("true") || Expresion(root.ChildNodes.ElementAt(2), tabla, tablam).Equals("true"))
                                 {
                                     return "false";
                                 }
@@ -511,7 +568,7 @@ namespace Crl.Analizador
 
                             default:
                                 String asa = root.ChildNodes.ElementAt(1).ToString().Substring(0, 1);
-                                return Expresion(root.ChildNodes.ElementAt(1), tabla);
+                                return Expresion(root.ChildNodes.ElementAt(1), tabla, tablam);
 
                         }
                     }

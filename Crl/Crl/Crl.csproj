@@ -44,6 +44,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BarcodeLib.Barcode.CrystalReports">
+      <HintPath>..\..\..\..\Escritorio\lib\BarcodeLib_NETBarcode_Trial\BarcodeLib.Barcode.CrystalReports.dll</HintPath>
+    </Reference>
     <Reference Include="Irony">
       <HintPath>..\..\..\..\..\Escritorio\libreries\irony\Irony.dll</HintPath>
     </Reference>
@@ -186,8 +189,8 @@
   <ItemGroup>
     <Compile Include="Analizador\Calculadora.cs" />
     <Compile Include="Analizador\Calculadorametodo.cs" />
+    <Compile Include="Analizador\Compilador.cs" />
     <Compile Include="Analizador\Gramatica.cs" />
-    <Compile Include="Analizador\Sintactico.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="About.aspx.cs">
       <DependentUpon>About.aspx</DependentUpon>
@@ -215,6 +218,8 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Graficas\ControlDOT.cs" />
+    <Compile Include="Graficas\GraficarEXP.cs" />
+    <Compile Include="Graficas\GraficarAST.cs" />
     <Compile Include="Pila\PilaTS.cs" />
     <Compile Include="Pila\Simbolos.cs" />
     <Compile Include="Pila\Tabla.cs" />
@@ -233,6 +238,7 @@
     <Compile Include="Site.Mobile.Master.designer.cs">
       <DependentUpon>Site.Mobile.Master</DependentUpon>
     </Compile>
+    <Compile Include="TablaMetodos\DatoSB.cs" />
     <Compile Include="TablaMetodos\Parametros.cs" />
     <Compile Include="TablaMetodos\SimbolosM.cs" />
     <Compile Include="TablaMetodos\TablaM.cs" />

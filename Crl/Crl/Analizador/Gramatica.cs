@@ -15,7 +15,7 @@ namespace Crl.Analizador
         {
             // a duni le gusta el pene
             #region ER;
-            RegexBasedTerminal Numerod = new RegexBasedTerminal("Numerod", "[0-9]+");
+            var Numerod = TerminalFactory.CreateCSharpNumber("numerod");
             RegexBasedTerminal Numeroe = new RegexBasedTerminal("Numeroe", "[0-9]+");
             RegexBasedTerminal Id = new RegexBasedTerminal("Id", "[A-Za-zñÑ][_0-9A-Za-z]*");
             var string_literal = TerminalFactory.CreateCSharpString("Cadena");
@@ -502,7 +502,7 @@ namespace Crl.Analizador
 
             //variables
            Variable2.Rule = Tipod + Id + igual_r + Expd + puntocoma_r
-                    | Tipod + Idl + puntocoma_r
+                    | Tipod + Idl + igual_r + Expd + puntocoma_r
                     | Id + igual_r + Expd + puntocoma_r;
             //------------------------------------
 

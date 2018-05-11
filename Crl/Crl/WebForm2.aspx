@@ -6,24 +6,69 @@
 <head runat="server">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title></title>
-    <script type ="text/javascript">
-    $(document).ready(function (){
-        $('#tabs').tabs();
-        });
-    </script>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet">
+	
+	<!-- Animate.css -->
+	<link rel="stylesheet" href="css/animate.css">
+	<!-- Icomoon Icon Fonts-->
+	<link rel="stylesheet" href="css/icomoon.css">
+	<!-- Themify Icons-->
+	<link rel="stylesheet" href="css/themify-icons.css">
+	<!-- Bootstrap  -->
+	<link rel="stylesheet" href="css/bootstrap.css">
+
+	<!-- Magnific Popup -->
+	<link rel="stylesheet" href="css/magnific-popup.css">
+
+	<!-- Owl Carousel  -->
+	<link rel="stylesheet" href="css/owl.carousel.min.css">
+	<link rel="stylesheet" href="css/owl.theme.default.min.css">
+
+	<!-- Theme style  -->
+	<link rel="stylesheet" href="css/style.css">
+
+	<!-- Modernizr JS -->
+	<script src="js/modernizr-2.6.2.min.js"></script>
+	<!-- FOR IE9 below -->
+	<!--[if lt IE 9]>
+	<script src="js/respond.min.js"></script>
+	<![endif]-->
+
+
+
+
 </head>
 <body>
+    <div class="gtco-cover gtco-cover-sm" id="gtco-header" role="banner" style="background-image: url(images/img_1.jpg)">
+       <div class="row">
     <form id="form1" runat="server">
-        <div>
-                <asp:Button ID="Button1" runat="server" Text="Abrir" />
-    <asp:Button ID="Button2" runat="server" Text="Guardar" />
-    <asp:Button ID="Button3" runat="server" Text="Crear pestaña" />
-    
-    <asp:Button ID="Button4" runat="server" Text="Eliminar pestaña" />
-    <asp:Button ID="Button5" runat="server" Text="Compilar" OnClick="Button5_Click" />
-    <asp:Button ID="Button6" runat="server" Text="Abrir album" OnClick="Button6_Click" />
-            <br>
-    <asp:TextBox ID="TextBox1" runat="server" TextMode="MultiLine" Height="518px" Width="514px" OnTextChanged="TextBox1_TextChanged" >Importar aritmeticas.clr ;
+        <div class="row">
+    <div class="col-md-2">
+                 <div class="col-md-2">
+    <asp:Button ID="Button7" runat="server" Text="Agregar Pestaña"  CssClass="btn btn-primary"/>
+                </div>
+                 <div class="col-md-2">
+    <asp:Button ID="Button8" runat="server" Text="Eliminar Pestaña"  CssClass="btn btn-primary"/>
+                </div>
+<br>
+
+        <div class="col-md-4 col-md-push-1 animate-box fadeInRight animated-fast" data-animate-effect="fadeInRight">
+							<div class="form-wrap">
+								<div class="tab">
+									<ul class="tab-menu">
+										<li class="gtco-first active"><a href="#" data-tab="signup">Sign up</a></li>
+										<li class="gtco-second"><a href="#" data-tab="login">Login</a></li>
+									</ul>
+									<%--	<div class="tab-content-inner active" data-content="sign up">
+ --%>                                              <asp:TextBox ID="TextBox1" runat="server" TextMode="MultiLine" Height="518px" Width="1527px" OnTextChanged="TextBox1_TextChanged" CssClass="form-control"  placeholder="Write us something" rows="10" cols="30">Importar aritmeticas.clr ;
+        
+											<%--</div>
+
+	--%>									
+
+								</div>
+							</div>
+						</div>
 
 Importar relacionales.clr ;
 Definir 2 ;
@@ -96,21 +141,33 @@ Int llamada(Int a,Int b,Int c){
 Print a+b+c
 Retorno a;
 }</asp:TextBox>
-    
-    <asp:TextBox ID="TextBox3" runat="server" TextMode="MultiLine" Height="170px" Width="514px" OnTextChanged="TextBox1_TextChanged" ></asp:TextBox>
-    
-            <asp:TextBox ID="TextBox2" runat="server" TextMode="MultiLine" Height="154px" Width="514px" ></asp:TextBox>
-
-
-       <div id="tabs" style="width: 400px">
-<ul>
-    <li><a href="#tab1">Tab 1</a></li>
-    <li><a href="#tab1">Tab 1</a></li>
-</ul>
-           <div id="tab1"> contenido1</div>
-           <div id="tab2"> contenido2</div>
-</div>
+     <br> 
+        <asp:TextBox ID="TextBox3" runat="server" TextMode="MultiLine" Height="170px" Width="514px" OnTextChanged="TextBox1_TextChanged" CssClass="form-control"  placeholder="Write us something" rows="10" cols="30"></asp:TextBox>
+        <br>    
+         <div class="col-md-2">
+        <asp:Button ID="Button1" runat="server" Text="Abrir"  CssClass="btn btn-primary"/>
+        </div>
+            <div class="col-md-2">
+    <asp:Button ID="Button2" runat="server" Text="Guardar"  CssClass="btn btn-primary"/>
+                </div>
+            <div class="col-md-2">
+    <asp:Button ID="Button3" runat="server" Text="Crear pestaña"  CssClass="btn btn-primary"/>
+    </div>
+            <div class="col-md-2">
+    <asp:Button ID="Button4" runat="server" Text="Eliminar pestaña"  CssClass="btn btn-primary"/>
+                </div>
+            <div class="col-md-2">
+    <asp:Button ID="Button5" runat="server" Text="Compilar" OnClick="Button5_Click"  CssClass="btn btn-primary"/>
+                </div>
+            <div class="col-md-2">
+    <asp:Button ID="Button6" runat="server" Text="Abrir album" OnClick="Button6_Click"  CssClass="btn btn-primary"/>
+            </div><br />
+    </div>
+      
+      
             </div>
     </form>
+
+    </div>
 </body>
 </html>

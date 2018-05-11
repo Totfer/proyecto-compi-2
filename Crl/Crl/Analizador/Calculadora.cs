@@ -13,8 +13,7 @@ namespace Crl.Analizador
         public static String ResolverOperacion(ParseTreeNode root, Tabla tabla)
         {
 
-            String retorno = root.ToString();
-
+            
             foreach (ParseTreeNode hijo in root.ChildNodes)
             {
                 String a = hijo.ToString();
@@ -22,14 +21,15 @@ namespace Crl.Analizador
                 {
                     String resultado = Expresion(hijo, tabla);
                     dato = resultado;
-                    retorno = resultado;
+                   
+                    break;
                 }
 
-                ResolverOperacion(hijo,tabla);
-
+               // ResolverOperacion(hijo,tabla);
+                
 
             }
-            return retorno;
+            return dato;
         }
 
 
@@ -53,7 +53,7 @@ namespace Crl.Analizador
                     {
                         retorno = "";
                     }
-                    else if (Sintactico.tipod.Equals("String"))
+                    else if (Compilador.tipod.Equals("String"))
                     {
                         foreach (Simbolos sb in tabla.tabla)
                         {
@@ -63,11 +63,18 @@ namespace Crl.Analizador
                                 retorno = sb.valor;
                             }
                         }
-                        
+                        if (retorno.Equals("false"))
+                        {
+                            retorno = "0";
+                        }
+                        else if (retorno.Equals("true"))
+                        {
+                            retorno = "1";
+                        }
                         retorno = "`" + retorno + "`";
 
                     }
-                    else if (Sintactico.tipod.Equals("Bool"))
+                    else if (Compilador.tipod.Equals("Bool"))
                     {
                         foreach (Simbolos sb in tabla.tabla)
                         {
@@ -93,7 +100,7 @@ namespace Crl.Analizador
                     {
                         retorno = "0";
                     }
-                    else if ((Sintactico.tipod.Equals("Double") && retorno.Contains("'")) || (Sintactico.tipod.Equals("Int") && retorno.Contains("'")))
+                    else if ((Compilador.tipod.Equals("Double") && retorno.Contains("'")) || (Compilador.tipod.Equals("Int") && retorno.Contains("'")))
                     {
                         retorno = Convert.ToString((int)Convert.ToChar(retorno.Replace("'", "")));
                     }
@@ -101,7 +108,7 @@ namespace Crl.Analizador
                     {
                         foreach (Simbolos sb in tabla.tabla)
                         {
-                            if (sb.nombre.Equals(numero[0]))
+                            if (sb.nombre.Equals(numero[0].Replace("'", "")))
                             {
 
                                 if (sb.tipo.Equals("Char"))
